@@ -8,8 +8,8 @@
         <i class="bi bi-people-fill fs-1 me-3 text-primary"></i>
         <h1 class="mb-0">Liste des Groupes</h1>
     </div>
-    <a href="{{ route('groups.create') }}" class="btn btn-success btn-lg">
-        <i class="bi bi-plus-circle me-2"></i>Créer un Groupe
+    <a href="{{ route('groups.create') }}" class="btn btn-success btn-sm">
+        <i class="bi bi-plus-circle me-2"></i>Ajouter un Groupe
     </a>
 </div>
 
@@ -87,5 +87,68 @@
             </tbody>
         </table>
     </div>
+@endif
+
+@php
+    $trashedGroups = \App\Models\Group::onlyTrashed()->withCount('persons')->get();
+@endphp
+
+@if($trashedGroups->isNotEmpty())
+<div class="mt-5">
+    <details class="mb-4">
+        <summary class="h3 cursor-pointer d-flex align-items-center gap-2">
+            <i class="bi bi-archive text-muted"></i> 
+            Groupes Supprimés ({{ $trashedGroups->count() }})
+            <i class="bi bi-chevron-down ms-2"></i>
+        </summary>
+        
+        <div class="table-responsive mt-3">
+            <table class="table table-hover align-middle bg-light bg-opacity-50">
+                <thead class="table-secondary">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom</th>
+                        <th>Total Dépensé</th>
+                        <th>Total Gagné</th>
+                        <th>Budget Total</th>
+                        <th>Nb Personnes</th>
+                        <th>Supprimé le</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($trashedGroups as $group)
+                    <tr class="text-muted">
+                        <td><span class="badge bg-secondary">{{ $group->id }}</span></td>
+                        <td>
+                            <i class="bi bi-people-fill me-1"></i>{{ $group->name }}
+                        </td>
+                        <td>{{ number_format($group->total_spent, 2) }}€</td>
+                        <td>{{ number_format($group->total_won, 2) }}€</td>
+                        <td><strong>{{ number_format($group->total_budget, 2) }}€</strong></td>
+                        <td><span class="badge bg-info">{{ $group->persons_count }}</span></td>
+                        <td>{{ $group->deleted_at->format('d/m/Y H:i') }}</td>
+                        <td class="text-center">
+                            <form action="{{ route('groups.restore', $group->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-success" title="Restaurer">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurer
+                                </button>
+                            </form>
+                            <form action="{{ route('groups.force-destroy', $group->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger ms-1" onclick="return confirm('Supprimer définitivement ce groupe ? Cette action est irréversible !')" title="Supprimer définitivement">
+                                    <i class="bi bi-trash3-fill me-1"></i>Supprimer définitivement
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </details>
+</div>
 @endif
 @endsection

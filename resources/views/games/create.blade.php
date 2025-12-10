@@ -14,8 +14,8 @@
         <strong>Erreur:</strong> Aucune personne dans le groupe. Veuillez ajouter des personnes avant de jouer.
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <a href="{{ route('groups.show', $group) }}" class="btn btn-primary btn-lg">
-        <i class="bi bi-arrow-left-circle me-2"></i>Retour au groupe
+    <a href="{{ route('groups.show', $group) }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-arrow-left me-2"></i>Retour au Groupe
     </a>
 @else
     <div class="card border-0 shadow-sm mb-4">

@@ -45,8 +45,16 @@ class GroupController extends Controller
      */
     public function show(Group $group)
     {
+        // Rafraîchir la relation persons depuis la base de données
         $group->load('persons');
-        return view('groups.show', compact('group'));
+        $group->refresh();
+        $group->load('persons');
+        
+        // Récupérer les personnes qui ne sont pas dans ce groupe
+        $personIdsInGroup = $group->persons->pluck('id')->toArray();
+        $availablePersons = Person::whereNotIn('id', $personIdsInGroup)->get();
+        
+        return view('groups.show', compact('group', 'availablePersons'));
     }
 
     /**
@@ -90,12 +98,17 @@ class GroupController extends Controller
 
         // Format data
         $data = $games->map(function($game) use ($group) {
+            $personsCount = $group->persons->count();
+            $winningsPerPerson = ($game->is_winner && $personsCount > 0) 
+                ? number_format($game->winnings / $personsCount, 2) . '€' 
+                : '-';
+            
             return [
                 'game_date' => $game->game_date->format('d/m/Y'),
                 'amount' => number_format($game->amount, 2) . '€',
                 'cost_per_person' => number_format($game->cost_per_person, 2) . '€',
                 'winnings' => $game->is_winner ? number_format($game->winnings, 2) . '€' : '-',
-                'winnings_per_person' => $game->is_winner ? number_format($game->winnings / $group->persons->count(), 2) . '€' : '-',
+                'winnings_per_person' => $winningsPerPerson,
                 'status' => $game->is_winner ? 'Gagné' : 'Pas gagné',
                 'is_winner' => $game->is_winner,
                 'actions' => $game->is_winner ? '' : route('games.win', $game),
@@ -108,12 +121,22 @@ class GroupController extends Controller
         $totalAmount = $allGames->sum('amount');
         $totalWinnings = $allGames->where('is_winner', true)->sum('winnings');
         $personsCount = $group->persons->count();
-        $totalCostPerPerson = $personsCount > 0 ? $allGames->sum('cost_per_person') : 0;
-        $totalWinningsPerPerson = $personsCount > 0 && $totalWinnings > 0 
-            ? $allGames->where('is_winner', true)->sum(function($game) use ($personsCount) {
-                return $game->winnings / $personsCount;
-            })
-            : 0;
+        
+        // Toujours afficher le coût historique total par personne (somme des cost_per_person de chaque jeu)
+        $totalCostPerPerson = $allGames->sum('cost_per_person');
+        
+        // Pour les gains par personne, calculer en fonction du nombre de personnes actuel s'il y en a
+        // Sinon, utiliser la somme des gains divisés par le nombre de personnes au moment du jeu
+        $totalWinningsPerPerson = 0;
+        if ($totalWinnings > 0) {
+            foreach ($allGames->where('is_winner', true) as $game) {
+                // Calculer combien de personnes étaient dans le groupe lors de ce jeu
+                $personsAtGameTime = $game->amount > 0 ? $game->amount / $game->cost_per_person : 0;
+                if ($personsAtGameTime > 0) {
+                    $totalWinningsPerPerson += $game->winnings / $personsAtGameTime;
+                }
+            }
+        }
 
         return response()->json([
             'draw' => intval($request->input('draw')),
@@ -157,10 +180,47 @@ class GroupController extends Controller
      */
     public function destroy(Group $group)
     {
+        // Vérifier si le groupe a des personnes
+        if ($group->persons()->count() > 0) {
+            return redirect()->route('groups.index')
+                ->with('error', 'Impossible de supprimer un groupe qui contient des personnes. Veuillez retirer toutes les personnes du groupe d\'abord.');
+        }
+
         $group->delete();
 
         return redirect()->route('groups.index')
             ->with('success', 'Groupe supprimé avec succès.');
+    }
+
+    /**
+     * Restore a soft deleted group
+     */
+    public function restore($id)
+    {
+        $group = Group::withTrashed()->findOrFail($id);
+        $group->restore();
+
+        return redirect()->route('groups.index')
+            ->with('success', 'Groupe restauré avec succès.');
+    }
+
+    /**
+     * Permanently delete a group
+     */
+    public function forceDestroy($id)
+    {
+        $group = Group::withTrashed()->findOrFail($id);
+
+        // Vérifier si le groupe a des personnes
+        if ($group->persons()->count() > 0) {
+            return redirect()->route('groups.index')
+                ->with('error', 'Impossible de supprimer définitivement un groupe qui contient des personnes. Veuillez retirer toutes les personnes du groupe d\'abord.');
+        }
+
+        $group->forceDelete();
+
+        return redirect()->route('groups.index')
+            ->with('success', 'Groupe supprimé définitivement.');
     }
 
     /**

@@ -18,7 +18,7 @@
                     <i class="bi bi-person-fill me-2"></i>Nom <span class="text-danger">*</span>
                 </label>
                 <input type="text" id="name" name="name" value="{{ old('name') }}" 
-                       class="form-control form-control-lg @error('name') is-invalid @enderror" 
+                       class="form-control form-control-sm @error('name') is-invalid @enderror" 
                        placeholder="Entrez le nom de la personne" required>
                 @error('name')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -26,10 +26,10 @@
             </div>
             
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-success btn-lg">
+                <button type="submit" class="btn btn-success btn-sm">
                     <i class="bi bi-check-circle me-2"></i>Créer
                 </button>
-                <a href="{{ route('persons.index') }}" class="btn btn-secondary btn-lg">
+                <a href="{{ route('persons.index') }}" class="btn btn-secondary btn-sm">
                     <i class="bi bi-x-circle me-2"></i>Annuler
                 </a>
             </div>

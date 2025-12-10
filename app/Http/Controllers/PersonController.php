@@ -77,6 +77,12 @@ class PersonController extends Controller
      */
     public function destroy(Person $person)
     {
+        // Vérifier si la personne appartient à un groupe
+        if ($person->groups()->count() > 0) {
+            return redirect()->route('persons.index')
+                ->with('error', 'Impossible de supprimer une personne qui appartient à un groupe. Veuillez la retirer de tous ses groupes d\'abord.');
+        }
+
         $person->delete();
 
         return redirect()->route('persons.index')
@@ -114,6 +120,87 @@ class PersonController extends Controller
 
         return redirect()->back()
             ->with('success', 'Groupe rejoint avec succès!');
+    }
+
+    /**
+     * Restore a soft deleted person
+     */
+    public function restore($id)
+    {
+        $person = Person::withTrashed()->findOrFail($id);
+        $person->restore();
+
+        return redirect()->route('persons.index')
+            ->with('success', 'Personne restaurée avec succès.');
+    }
+
+    /**
+     * Permanently delete a person
+     */
+    public function forceDestroy($id)
+    {
+        $person = Person::withTrashed()->findOrFail($id);
+
+        // Vérifier que la personne a bien été soft deleted
+        if (!$person->trashed()) {
+            return redirect()->route('persons.index')
+                ->with('error', 'La personne doit d\'abord être supprimée (soft delete) avant de pouvoir être supprimée définitivement.');
+        }
+
+        // Vérifier si la personne a des fonds
+        if ($person->floating_balance != 0) {
+            return redirect()->route('persons.index')
+                ->with('error', 'Impossible de supprimer définitivement une personne qui a des fonds (solde flottant: ' . number_format($person->floating_balance, 2) . ' €).');
+        }
+
+        $person->forceDelete();
+
+        return redirect()->route('persons.index')
+            ->with('success', 'Personne supprimée définitivement.');
+    }
+
+    /**
+     * Add funds to person's floating balance
+     */
+    public function addFloatingFunds(Request $request, Person $person)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+        ]);
+
+        $amount = $validated['amount'];
+
+        // Ajouter les fonds
+        $person->floating_balance += $amount;
+        $person->save();
+
+        return redirect()->back()
+            ->with('success', 'Ajout de ' . number_format($amount, 2) . ' € effectué avec succès. Nouveau solde flottant: ' . number_format($person->floating_balance, 2) . ' €');
+    }
+
+    /**
+     * Withdraw funds from person's floating balance
+     */
+    public function withdrawFunds(Request $request, Person $person)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+        ]);
+
+        $amount = $validated['amount'];
+
+        // Vérifier que la personne a suffisamment de fonds flottants
+        if ($person->floating_balance < $amount) {
+            return redirect()->back()
+                ->with('error', 'Fonds insuffisants. Solde flottant actuel: ' . number_format($person->floating_balance, 2) . ' €');
+        }
+
+        // Retirer les fonds
+        $person->floating_balance -= $amount;
+        $person->save();
+
+        return redirect()->back()
+            ->with('success', 'Retrait de ' . number_format($amount, 2) . ' € effectué avec succès. Nouveau solde flottant: ' . number_format($person->floating_balance, 2) . ' €');
     }
 
     /**

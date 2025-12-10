@@ -9,11 +9,11 @@
         <h1 class="mb-0">{{ $group->name }}</h1>
     </div>
     @if($group->persons->count() > 0)
-        <a href="{{ route('games.create', $group) }}" class="btn btn-success btn-lg">
-            <i class="bi bi-dice-5-fill me-2"></i>Jouer
+        <a href="{{ route('games.create', $group) }}" class="btn btn-success btn-sm">
+            <i class="bi bi-play-circle me-2"></i>Jouer
         </a>
     @else
-        <button class="btn btn-success btn-lg" disabled title="Ajoutez des personnes au groupe pour pouvoir jouer">
+        <button class="btn btn-success btn-sm" disabled title="Ajoutez des personnes au groupe pour pouvoir jouer">
             <i class="bi bi-dice-5-fill me-2"></i>Jouer
         </button>
     @endif
@@ -182,15 +182,15 @@
             @csrf
             <div class="col-md-8">
                 <label for="person_id" class="form-label fw-bold">Sélectionner une personne</label>
-                <select id="person_id" name="person_id" class="form-select form-select-lg" required>
+                <select id="person_id" name="person_id" class="form-select form-select-sm" required>
                     <option value="">-- Choisir une personne --</option>
-                    @foreach(\App\Models\Person::all() as $person)
+                    @foreach($availablePersons as $person)
                         <option value="{{ $person->id }}">{{ $person->name }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="col-md-4">
-                <button type="submit" class="btn btn-success btn-lg w-100">
+                <button type="submit" class="btn btn-success btn-sm w-100">
                     <i class="bi bi-plus-circle me-2"></i>Ajouter
                 </button>
             </div>

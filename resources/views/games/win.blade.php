@@ -53,8 +53,8 @@
         Montant du gain: <strong>{{ number_format($game->winnings, 2) }}€</strong>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <a href="{{ route('groups.show', $game->group) }}" class="btn btn-primary btn-lg">
-        <i class="bi bi-arrow-left-circle me-2"></i>Retour au groupe
+    <a href="{{ route('groups.show', $game->group) }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-arrow-left me-2"></i>Retour au Groupe
     </a>
 @else
     <h2 class="mb-3"><i class="bi bi-trophy text-success"></i> Enregistrer le Gain</h2>

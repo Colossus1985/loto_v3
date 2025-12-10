@@ -49,6 +49,54 @@
     </div>
 </div>
 
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-info bg-opacity-10 border-0">
+        <h5 class="mb-0"><i class="bi bi-wallet2 text-info"></i> Gérer les Fonds Flottants</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <!-- Ajouter des fonds -->
+            <div class="col-lg-6">
+                <div class="border rounded p-3 h-100">
+                    <h6 class="text-success mb-3"><i class="bi bi-plus-circle"></i> Ajouter des Fonds</h6>
+                    <form action="{{ route('persons.add-floating-funds', $person) }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="add_amount" class="form-label fw-bold">Montant à ajouter</label>
+                            <input type="number" step="0.01" min="0.01" id="add_amount" name="amount" class="form-control form-control-sm" placeholder="Ex: 10.00" required>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-sm w-100">
+                            <i class="bi bi-plus-circle me-2"></i>Ajouter
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <!-- Retirer des fonds -->
+            <div class="col-lg-6">
+                <div class="border rounded p-3 h-100 {{ $person->floating_balance > 0 ? '' : 'bg-light' }}">
+                    <h6 class="text-warning mb-3"><i class="bi bi-dash-circle"></i> Retirer des Fonds</h6>
+                    @if($person->floating_balance > 0)
+                        <form action="{{ route('persons.withdraw-funds', $person) }}" method="POST">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="withdraw_amount" class="form-label fw-bold">Montant à retirer (disponible: {{ number_format($person->floating_balance, 2) }} €)</label>
+                                <input type="number" step="0.01" min="0.01" max="{{ $person->floating_balance }}" id="withdraw_amount" name="amount" class="form-control form-control-sm" placeholder="Ex: 10.00" required>
+                            </div>
+                            <button type="submit" class="btn btn-warning btn-sm w-100" onclick="return confirm('Confirmer le retrait de fonds ?')">
+                                <i class="bi bi-dash-circle me-2"></i>Retirer
+                            </button>
+                        </form>
+                    @else
+                        <div class="alert alert-secondary mb-0">
+                            <i class="bi bi-info-circle me-2"></i>Aucun fond disponible pour retrait.
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <h2 class="mb-3 mt-4"><i class="bi bi-people text-primary"></i> Groupes</h2>
 @if($person->groups->isEmpty())
     <div class="alert alert-info" role="alert">
@@ -108,7 +156,7 @@
                 @csrf
                 <div class="col-md-8">
                     <label for="group_id" class="form-label fw-bold">Sélectionner un groupe</label>
-                    <select id="group_id" name="group_id" class="form-select form-select-lg" required>
+                    <select id="group_id" name="group_id" class="form-select form-select-sm" required>
                         <option value="">-- Choisir un groupe --</option>
                         @foreach($availableGroups as $group)
                             <option value="{{ $group->id }}">{{ $group->name }}</option>
@@ -116,7 +164,7 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <button type="submit" class="btn btn-success btn-lg w-100">
+                    <button type="submit" class="btn btn-success btn-sm w-100">
                         <i class="bi bi-plus-circle me-2"></i>Rejoindre
                     </button>
                 </div>
@@ -160,16 +208,16 @@
 </div>
 
 <div class="d-flex gap-2 mt-4">
-    <a href="{{ route('persons.edit', $person) }}" class="btn btn-warning">
+    <a href="{{ route('persons.edit', $person) }}" class="btn btn-warning btn-sm">
         <i class="bi bi-pencil-fill me-2"></i>Modifier
     </a>
-    <a href="{{ route('persons.index') }}" class="btn btn-primary">
+    <a href="{{ route('persons.index') }}" class="btn btn-primary btn-sm">
         <i class="bi bi-arrow-left-circle me-2"></i>Retour à la liste
     </a>
     <form action="{{ route('persons.destroy', $person) }}" method="POST" class="d-inline">
         @csrf
         @method('DELETE')
-        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette personne ?')">
+        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette personne ?')">
             <i class="bi bi-trash-fill me-2"></i>Supprimer
         </button>
     </form>
