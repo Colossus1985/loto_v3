@@ -45,7 +45,14 @@ class DashboardController extends Controller
         // Statistiques par personne
         $persons = Person::with(['groups' => function($query) {
             $query->withPivot('balance');
-        }])->get();
+        }])->get()->map(function($person) {
+            return [
+                'id' => $person->id,
+                'name' => $person->display_name,
+                'total_balance' => $person->total_balance,
+                'floating_balance' => $person->floating_balance,
+            ];
+        });
 
         // Obtenir tous les mois uniques
         $allMonths = Game::select(DB::raw('DATE_FORMAT(game_date, "%Y-%m") as month'))
