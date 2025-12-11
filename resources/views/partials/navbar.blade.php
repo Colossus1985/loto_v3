@@ -1,5 +1,8 @@
 <!-- Navbar slider -->
 <div class="ticker-navbar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="Replier/Déplier la sidebar">
+        <i class="bi bi-list"></i>
+    </button>
     <div class="slider-wrapper">
         @php
             $groups = \App\Models\Group::all();

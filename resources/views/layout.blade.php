@@ -13,7 +13,8 @@
     <!-- App Brand -->
     <a href="{{ route('groups.index') }}" class="app-brand" style="text-decoration: none;">
         <h1>
-            <img src="{{ asset('Images/LogoLoto.png') }}" alt="Loto de Flo">
+            <img src="{{ asset('Images/LogoLoto.png') }}" alt="Loto de Flo" class="brand-logo">
+            <img src="{{ asset('Images/faviconLoto.ico') }}" alt="Loto de Flo" class="brand-favicon">
         </h1>
     </a>
 
@@ -149,6 +150,21 @@
                 document.getElementById('playGameForm').action = '/groups/' + groupId + '/play';
             }
         }
+
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-collapsed');
+            // Sauvegarder l'état dans localStorage
+            const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        }
+
+        // Restaurer l'état de la sidebar au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                document.body.classList.add('sidebar-collapsed');
+            }
+        });
     </script>
 </body>
 </html>

@@ -51,6 +51,26 @@ h3 {
 .app-brand img {
     height: 35px;
     width: auto;
+    transition: all 0.3s ease;
+}
+
+/* Logo et Favicon - par défaut logo visible, favicon caché */
+.app-brand .brand-logo {
+    display: block;
+}
+
+.app-brand .brand-favicon {
+    display: none;
+}
+
+/* Quand sidebar repliée - favicon visible, logo caché */
+body.sidebar-collapsed .app-brand .brand-logo {
+    display: none;
+}
+
+body.sidebar-collapsed .app-brand .brand-favicon {
+    display: block;
+    height: 30px;
 }
 
 .sidebar {
@@ -62,6 +82,48 @@ h3 {
     overflow-y: auto;
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+/* Sidebar collapsed state */
+body.sidebar-collapsed .sidebar {
+    width: 70px;
+}
+
+body.sidebar-collapsed .app-brand {
+    width: 70px;
+}
+
+body.sidebar-collapsed .ticker-navbar {
+    left: 70px;
+}
+
+body.sidebar-collapsed .main-content {
+    margin-left: 70px;
+}
+
+body.sidebar-collapsed .app-footer {
+    left: 70px;
+}
+
+body.sidebar-collapsed .sidebar-menu > li > a span,
+body.sidebar-collapsed .sidebar-menu > li > a .chevron-icon,
+body.sidebar-collapsed .submenu span {
+    display: none;
+}
+
+body.sidebar-collapsed .sidebar-menu > li > a {
+    justify-content: center;
+    padding: 14px;
+}
+
+body.sidebar-collapsed .sidebar-menu .menu-icon {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+body.sidebar-collapsed .app-brand h1 {
+    font-size: 0;
 }
 
 .sidebar-header {
@@ -120,6 +182,9 @@ h3 {
 .sidebar-menu a:hover {
     background: rgba(255, 255, 255, 0.15);
     color: white;
+}
+
+body:not(.sidebar-collapsed) .sidebar-menu a:hover {
     transform: translateX(5px);
 }
 
@@ -133,6 +198,7 @@ h3 {
     font-size: 16px;
     width: 20px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .main-content {
@@ -273,12 +339,41 @@ h2 {
     z-index: 999;
     display: flex;
     align-items: center;
+    transition: left 0.3s ease;
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    position: absolute;
+    left: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.sidebar-toggle i {
+    font-size: 1.5rem;
 }
 
 .slider-wrapper {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    margin-left: 60px;
 }
 
 .slider-track {
@@ -413,6 +508,31 @@ table.dataTable tfoot {
 .submenu a {
     padding: 10px 18px;
     font-size: 0.95rem;
+}
+
+/* En mode replié, afficher le submenu comme des boutons normaux */
+body.sidebar-collapsed .submenu {
+    max-height: none !important;
+    overflow: visible;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+body.sidebar-collapsed .menu-toggle {
+    display: none;
+}
+
+body.sidebar-collapsed .submenu a {
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+body.sidebar-collapsed .submenu .menu-icon {
+    font-size: 1.5rem;
 }
 
 .menu-toggle {
