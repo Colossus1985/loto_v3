@@ -95,9 +95,20 @@
                 <form action="{{ route('persons.store') }}" method="POST">
                     @csrf
                     <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label for="person_firstname" class="form-label fw-bold">Prénom</label>
+                                <input type="text" name="firstname" id="person_firstname" class="form-control" placeholder="Prénom">
+                            </div>
+                            <div class="col-6">
+                                <label for="person_lastname" class="form-label fw-bold">Nom de famille</label>
+                                <input type="text" name="lastname" id="person_lastname" class="form-control" placeholder="Nom de famille">
+                            </div>
+                        </div>
                         <div class="mb-3">
-                            <label for="person_name" class="form-label fw-bold">Nom <span class="text-danger">*</span></label>
-                            <input type="text" name="name" id="person_name" class="form-control" required>
+                            <label for="person_pseudo" class="form-label fw-bold">Pseudo <span class="text-muted">(affiché partout)</span></label>
+                            <input type="text" name="pseudo" id="person_pseudo" class="form-control" placeholder="Pseudo d'affichage">
+                            <small class="form-text text-muted">Le pseudo sera affiché à la place du nom/prénom</small>
                         </div>
                     </div>
                     <div class="modal-footer">

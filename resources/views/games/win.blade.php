@@ -38,7 +38,7 @@
                 <p class="mb-2"><strong><i class="bi bi-person-badge"></i> Membres:</strong></p>
                 <div>
                     @foreach($game->group->persons as $person)
-                        <span class="badge bg-info me-1">{{ $person->name }}</span>
+                        <span class="badge bg-info me-1">{{ $person->display_name }}</span>
                     @endforeach
                 </div>
             </div>

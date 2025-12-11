@@ -13,17 +13,43 @@
         <form action="{{ route('persons.update', $person) }}" method="POST">
             @csrf
             @method('PUT')
-            
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label for="firstname" class="form-label fw-bold">
+                        <i class="bi bi-person-fill me-2"></i>Prénom
+                    </label>
+                    <input type="text" id="firstname" name="firstname" value="{{ old('firstname', $person->firstname) }}" 
+                           class="form-control form-control-sm @error('firstname') is-invalid @enderror" 
+                           placeholder="Prénom">
+                    @error('firstname')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-6">
+                    <label for="lastname" class="form-label fw-bold">
+                        <i class="bi bi-person-fill me-2"></i>Nom de famille
+                    </label>
+                    <input type="text" id="lastname" name="lastname" value="{{ old('lastname', $person->lastname) }}" 
+                           class="form-control form-control-sm @error('lastname') is-invalid @enderror" 
+                           placeholder="Nom de famille">
+                    @error('lastname')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
             <div class="mb-4">
-                <label for="name" class="form-label fw-bold">
-                    <i class="bi bi-person-fill me-2"></i>Nom <span class="text-danger">*</span>
+                <label for="pseudo" class="form-label fw-bold">
+                    <i class="bi bi-star-fill me-2"></i>Pseudo <span class="text-muted">(affiché partout)</span>
                 </label>
-                <input type="text" id="name" name="name" value="{{ old('name', $person->name) }}" 
-                       class="form-control form-control-sm @error('name') is-invalid @enderror" 
-                       placeholder="Entrez le nom de la personne" required>
-                @error('name')
+                <input type="text" id="pseudo" name="pseudo" value="{{ old('pseudo', $person->pseudo) }}" 
+                       class="form-control form-control-sm @error('pseudo') is-invalid @enderror" 
+                       placeholder="Pseudo d'affichage">
+                @error('pseudo')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
+                <small class="form-text text-muted">Si renseigné, le pseudo sera affiché à la place du nom/prénom</small>
             </div>
             
             <div class="d-flex gap-2">

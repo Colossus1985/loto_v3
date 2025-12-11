@@ -57,7 +57,7 @@
                         @else
                             @foreach($group->persons as $person)
                                 <a href="{{ route('persons.show', $person) }}" class="badge bg-primary text-white text-decoration-none me-1">
-                                    <i class="bi bi-person-fill"></i> {{ $person->name }}
+                                    <i class="bi bi-person-fill"></i> {{ $person->display_name }}
                                 </a>
                             @endforeach
                         @endif

@@ -11,7 +11,59 @@ class Person extends Model
 
     protected $table = 'persons';
     
-    protected $fillable = ['name', 'total_balance', 'floating_balance'];
+    protected $fillable = ['firstname', 'lastname', 'pseudo', 'total_balance', 'floating_balance'];
+
+    /**
+     * Mutateur pour convertir le nom de famille en majuscules
+     */
+    public function setLastnameAttribute($value)
+    {
+        $this->attributes['lastname'] = $value ? strtoupper($value) : null;
+    }
+
+    /**
+     * Obtenir le nom d'affichage (pseudo ou nom complet)
+     */
+    public function getDisplayNameAttribute()
+    {
+        if ($this->pseudo) {
+            return $this->pseudo;
+        }
+        
+        if ($this->firstname && $this->lastname) {
+            return $this->firstname . ' ' . $this->lastname;
+        }
+        
+        if ($this->firstname) {
+            return $this->firstname;
+        }
+        
+        if ($this->lastname) {
+            return $this->lastname;
+        }
+        
+        return 'Sans nom';
+    }
+
+    /**
+     * Obtenir le nom complet
+     */
+    public function getFullNameAttribute()
+    {
+        if ($this->firstname && $this->lastname) {
+            return $this->firstname . ' ' . $this->lastname;
+        }
+        
+        if ($this->firstname) {
+            return $this->firstname;
+        }
+        
+        if ($this->lastname) {
+            return $this->lastname;
+        }
+        
+        return 'Sans nom';
+    }
 
     /**
      * Relation many-to-many avec Group via la table pivot group_person

@@ -31,7 +31,9 @@ class PersonController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'firstname' => 'nullable|string|max:255',
+            'lastname' => 'nullable|string|max:255',
+            'pseudo' => 'nullable|string|max:255',
         ]);
 
         Person::create($validated);
@@ -45,8 +47,28 @@ class PersonController extends Controller
      */
     public function show(Person $person)
     {
-        $person->load('groups');
-        return view('persons.show', compact('person'));
+        $person->load('groups.games');
+        
+        // Calculer le montant total joué par la personne
+        $totalPlayed = 0;
+        $totalWon = 0;
+        
+        foreach ($person->groups as $group) {
+            foreach ($group->games as $game) {
+                // Coût par personne pour chaque jeu
+                $totalPlayed += $game->cost_per_person;
+                
+                // Si le jeu est gagnant, calculer les gains de la personne
+                if ($game->is_winner && $game->winnings > 0) {
+                    $personCount = $group->persons()->count();
+                    if ($personCount > 0) {
+                        $totalWon += $game->winnings / $personCount;
+                    }
+                }
+            }
+        }
+        
+        return view('persons.show', compact('person', 'totalPlayed', 'totalWon'));
     }
 
     /**
@@ -63,7 +85,9 @@ class PersonController extends Controller
     public function update(Request $request, Person $person)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'firstname' => 'nullable|string|max:255',
+            'lastname' => 'nullable|string|max:255',
+            'pseudo' => 'nullable|string|max:255',
         ]);
 
         $person->update($validated);

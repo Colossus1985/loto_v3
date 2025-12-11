@@ -5,7 +5,7 @@
 @section('content')
 <div class="d-flex align-items-center mb-4">
     <i class="bi bi-person-circle fs-1 me-3 text-primary"></i>
-    <h1 class="mb-0">{{ $person->name }}</h1>
+    <h1 class="mb-0">{{ $person->display_name }}</h1>
 </div>
 
 <div class="row g-4 mb-4">
@@ -44,6 +44,32 @@
             <div class="card-body">
                 <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-calendar-event"></i> Créé le</h6>
                 <h3 class="card-title text-info fs-5">{{ $person->created_at->format('d/m/Y H:i') }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Nouvelles statistiques de jeux -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-dice-5-fill"></i> Montant Total Joué</h6>
+                <h3 class="card-title negative" style="font-size: 1.8rem;">
+                    {{ number_format($totalPlayed, 2) }}€
+                </h3>
+                <small class="text-muted">Total dépensé dans tous les jeux</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-trophy-fill"></i> Montant Total Gagné</h6>
+                <h3 class="card-title positive" style="font-size: 1.8rem;">
+                    {{ number_format($totalWon, 2) }}€
+                </h3>
+                <small class="text-muted">Total des gains dans tous les jeux</small>
             </div>
         </div>
     </div>

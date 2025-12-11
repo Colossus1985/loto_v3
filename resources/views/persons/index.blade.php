@@ -37,8 +37,11 @@
                     <td><span class="badge bg-secondary">{{ $person->id }}</span></td>
                     <td>
                         <a href="{{ route('persons.show', $person) }}" class="text-decoration-none fw-bold">
-                            <i class="bi bi-person-fill me-1"></i>{{ $person->name }}
+                            <i class="bi bi-person-fill me-1"></i>{{ $person->display_name }}
                         </a>
+                        @if($person->pseudo && ($person->firstname || $person->lastname))
+                            <br><small class="text-muted">{{ $person->full_name }}</small>
+                        @endif
                     </td>
                     <td class="{{ $person->total_balance < 0 ? 'negative' : 'positive' }}">
                         <i class="bi bi-{{ $person->total_balance < 0 ? 'dash' : 'plus' }}-circle-fill me-1"></i>
@@ -117,7 +120,7 @@
                     <tr class="text-muted">
                         <td><span class="badge bg-secondary">{{ $person->id }}</span></td>
                         <td>
-                            <i class="bi bi-person-fill me-1"></i>{{ $person->name }}
+                            <i class="bi bi-person-fill me-1"></i>{{ $person->display_name }}
                         </td>
                         <td>{{ number_format($person->total_balance, 2) }}€</td>
                         <td>{{ number_format($person->floating_balance, 2) }}€</td>

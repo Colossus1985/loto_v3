@@ -90,7 +90,7 @@
                 <tr>
                     <td>
                         <a href="{{ route('persons.show', $person) }}" class="text-decoration-none fw-bold">
-                            <i class="bi bi-person-fill me-1"></i>{{ $person->name }}
+                            <i class="bi bi-person-fill me-1"></i>{{ $person->display_name }}
                         </a>
                         @if($person->floating_balance > 0)
                             <br><small class="text-info"><i class="bi bi-wallet2"></i> Budget flottant: {{ number_format($person->floating_balance, 2) }}€</small>
@@ -114,7 +114,7 @@
                         <form action="{{ route('groups.remove-person', [$group, $person]) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger mb-2" onclick="return confirm('Retirer {{ $person->name }} du groupe ? Le solde sera transféré vers le budget flottant.')">
+                            <button type="submit" class="btn btn-sm btn-danger mb-2" onclick="return confirm('Retirer {{ $person->display_name }} du groupe ? Le solde sera transféré vers le budget flottant.')">
                                 <i class="bi bi-person-dash"></i> Retirer
                             </button>
                         </form>
@@ -185,7 +185,7 @@
                 <select id="person_id" name="person_id" class="form-select form-select-sm" required>
                     <option value="">-- Choisir une personne --</option>
                     @foreach($availablePersons as $person)
-                        <option value="{{ $person->id }}">{{ $person->name }}</option>
+                        <option value="{{ $person->id }}">{{ $person->display_name }}</option>
                     @endforeach
                 </select>
             </div>

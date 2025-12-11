@@ -38,7 +38,7 @@
                     <p class="mb-2"><strong><i class="bi bi-person-badge"></i> Membres:</strong></p>
                     <div>
                         @foreach($group->persons as $person)
-                            <span class="badge bg-info me-1">{{ $person->name }} ({{ number_format($person->pivot->balance, 2) }}€)</span>
+                            <span class="badge bg-info me-1">{{ $person->display_name }} ({{ number_format($person->pivot->balance, 2) }}€)</span>
                         @endforeach
                     </div>
                 </div>
