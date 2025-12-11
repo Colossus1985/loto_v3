@@ -1,10 +1,10 @@
 <aside class="sidebar">
     <ul class="sidebar-menu list-unstyled">
         <li>
-            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}" title="Dashboard">
-                <i class="bi bi-speedometer2 menu-icon"></i>
-                <span>Dashboard</span>
-            </a>
+            <!-- <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}" title="Dashboard"> -->
+            <!-- <i class="bi bi-speedometer2 menu-icon"></i> -->
+                <!-- <span>DASHBOARD</span> -->
+            <!-- </a> -->
         </li>
         <li>
             <a href="{{ route('groups.index') }}" class="{{ request()->routeIs('groups.*') ? 'active' : '' }}" title="Groupes">
