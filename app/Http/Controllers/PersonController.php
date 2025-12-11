@@ -193,10 +193,21 @@ class PersonController extends Controller
         ]);
 
         $amount = $validated['amount'];
+        $balanceBefore = $person->floating_balance;
 
         // Ajouter les fonds
         $person->floating_balance += $amount;
         $person->save();
+
+        // Enregistrer la transaction
+        $person->logTransaction(
+            'add_floating',
+            $amount,
+            $balanceBefore,
+            $person->floating_balance,
+            'floating',
+            'Ajout de fonds flottants'
+        );
 
         return redirect()->back()
             ->with('success', 'Ajout de ' . number_format($amount, 2) . ' € effectué avec succès. Nouveau solde flottant: ' . number_format($person->floating_balance, 2) . ' €');
@@ -212,6 +223,7 @@ class PersonController extends Controller
         ]);
 
         $amount = $validated['amount'];
+        $balanceBefore = $person->floating_balance;
 
         // Vérifier que la personne a suffisamment de fonds flottants
         if ($person->floating_balance < $amount) {
@@ -222,6 +234,16 @@ class PersonController extends Controller
         // Retirer les fonds
         $person->floating_balance -= $amount;
         $person->save();
+
+        // Enregistrer la transaction
+        $person->logTransaction(
+            'withdraw_floating',
+            -$amount,
+            $balanceBefore,
+            $person->floating_balance,
+            'floating',
+            'Retrait de fonds flottants'
+        );
 
         return redirect()->back()
             ->with('success', 'Retrait de ' . number_format($amount, 2) . ' € effectué avec succès. Nouveau solde flottant: ' . number_format($person->floating_balance, 2) . ' €');

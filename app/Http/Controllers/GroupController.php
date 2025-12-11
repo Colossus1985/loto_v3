@@ -54,7 +54,13 @@ class GroupController extends Controller
         $personIdsInGroup = $group->persons->pluck('id')->toArray();
         $availablePersons = Person::whereNotIn('id', $personIdsInGroup)->get();
         
-        return view('groups.show', compact('group', 'availablePersons'));
+        // Récupérer les transactions liées au groupe
+        $transactions = \App\Models\PersonTransaction::where('group_id', $group->id)
+            ->with('person')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return view('groups.show', compact('group', 'availablePersons', 'transactions'));
     }
 
     /**
@@ -237,7 +243,19 @@ class GroupController extends Controller
                 ->with('error', 'Cette personne est déjà dans le groupe.');
         }
 
+        $person = Person::find($validated['person_id']);
         $group->persons()->attach($validated['person_id'], ['balance' => 0]);
+
+        // Enregistrer la transaction
+        $person->logTransaction(
+            'join_group',
+            0,
+            $person->total_balance,
+            $person->total_balance,
+            'group',
+            "Adhésion au groupe {$group->name}",
+            $group->id
+        );
 
         return redirect()->back()
             ->with('success', 'Personne ajoutée au groupe avec succès.');
@@ -253,11 +271,35 @@ class GroupController extends Controller
         
         if ($personInGroup) {
             $balanceToTransfer = $personInGroup->pivot->balance;
+            $balanceBefore = $person->floating_balance;
             
             // Transférer le solde vers le floating_balance
             $person->update([
                 'floating_balance' => $person->floating_balance + $balanceToTransfer
             ]);
+            
+            // Enregistrer la transaction
+            if ($balanceToTransfer != 0) {
+                $person->logTransaction(
+                    'leave_group',
+                    $balanceToTransfer,
+                    $balanceBefore,
+                    $person->floating_balance,
+                    'floating',
+                    "Départ du groupe {$group->name} - Transfert du solde vers flottant",
+                    $group->id
+                );
+            } else {
+                $person->logTransaction(
+                    'leave_group',
+                    0,
+                    $person->total_balance,
+                    $person->total_balance,
+                    'group',
+                    "Départ du groupe {$group->name}",
+                    $group->id
+                );
+            }
             
             // Retirer la personne du groupe
             $group->persons()->detach($person->id);
@@ -304,10 +346,23 @@ class GroupController extends Controller
             'balance' => $newBalance
         ]);
 
+        // Enregistrer la transaction
+        $totalBalanceBefore = $person->total_balance;
+        
         // Mettre à jour le total_balance de la personne
         $person->update([
             'total_balance' => $person->calculateTotalBalance()
         ]);
+        
+        $person->logTransaction(
+            'add_group_funds',
+            $validated['amount'],
+            $totalBalanceBefore,
+            $person->total_balance,
+            'group',
+            "Ajout de fonds dans le groupe {$group->name}",
+            $group->id
+        );
 
         // Mettre à jour le total_budget du groupe
         $group->update([
@@ -315,7 +370,7 @@ class GroupController extends Controller
         ]);
 
         return redirect()->back()
-            ->with('success', "Fonds ajoutés avec succès! {$person->name} : +{$validated['amount']}€");
+            ->with('success', "Fonds ajoutés avec succès! {$person->display_name} : +{$validated['amount']}€");
     }
 
     /**
@@ -340,13 +395,26 @@ class GroupController extends Controller
         }
 
         // Déduire du floating_balance
+        $floatingBalanceBefore = $person->floating_balance;
         $person->update([
             'floating_balance' => $person->floating_balance - $validated['amount']
         ]);
+        
+        // Enregistrer la transaction de retrait du flottant
+        $person->logTransaction(
+            'transfer_to_group',
+            -$validated['amount'],
+            $floatingBalanceBefore,
+            $person->floating_balance,
+            'floating',
+            "Transfert vers le groupe {$group->name}",
+            $group->id
+        );
 
         // Ajouter au solde dans le groupe
         $currentBalance = $group->persons()->where('person_id', $person->id)->first()->pivot->balance;
         $newBalance = $currentBalance + $validated['amount'];
+        $totalBalanceBefore = $person->total_balance;
 
         $group->persons()->updateExistingPivot($person->id, [
             'balance' => $newBalance
@@ -356,6 +424,17 @@ class GroupController extends Controller
         $person->update([
             'total_balance' => $person->calculateTotalBalance()
         ]);
+        
+        // Enregistrer la transaction d'ajout au groupe
+        $person->logTransaction(
+            'transfer_to_group',
+            $validated['amount'],
+            $totalBalanceBefore,
+            $person->total_balance,
+            'group',
+            "Transfert depuis le budget flottant vers le groupe {$group->name}",
+            $group->id
+        );
 
         // Mettre à jour le total_budget du groupe
         $group->update([
@@ -364,5 +443,62 @@ class GroupController extends Controller
 
         return redirect()->back()
             ->with('success', "Transfert effectué : {$validated['amount']}€ du budget flottant vers le groupe.");
+    }
+
+    /**
+     * Retirer des fonds du solde d'une personne dans le groupe
+     */
+    public function withdrawFundsFromGroup(Request $request, Group $group, Person $person)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+        ]);
+
+        // Vérifier que la personne est dans le groupe
+        if (!$group->persons()->where('person_id', $person->id)->exists()) {
+            return redirect()->back()
+                ->with('error', 'Cette personne n\'est pas dans le groupe.');
+        }
+
+        // Récupérer le solde actuel
+        $currentBalance = $group->persons()->where('person_id', $person->id)->first()->pivot->balance;
+
+        // Vérifier que le solde est suffisant
+        if ($currentBalance < $validated['amount']) {
+            return redirect()->back()
+                ->with('error', 'Solde insuffisant dans le groupe. Disponible : ' . number_format($currentBalance, 2) . '€');
+        }
+
+        $newBalance = $currentBalance - $validated['amount'];
+        $totalBalanceBefore = $person->total_balance;
+
+        // Mettre à jour le solde dans la table pivot
+        $group->persons()->updateExistingPivot($person->id, [
+            'balance' => $newBalance
+        ]);
+
+        // Mettre à jour le total_balance de la personne
+        $person->update([
+            'total_balance' => $person->calculateTotalBalance()
+        ]);
+        
+        // Enregistrer la transaction
+        $person->logTransaction(
+            'withdraw_group_funds',
+            -$validated['amount'],
+            $totalBalanceBefore,
+            $person->total_balance,
+            'group',
+            "Retrait de fonds du groupe {$group->name}",
+            $group->id
+        );
+
+        // Mettre à jour le total_budget du groupe
+        $group->update([
+            'total_budget' => $group->calculateTotalBudget()
+        ]);
+
+        return redirect()->back()
+            ->with('success', "Fonds retirés avec succès! {$person->display_name} : -{$validated['amount']}€");
     }
 }

@@ -76,6 +76,14 @@ class Person extends Model
     }
 
     /**
+     * Relation avec les transactions
+     */
+    public function transactions()
+    {
+        return $this->hasMany(PersonTransaction::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
      * Calculer le solde total de la personne (somme de tous les balances dans les groupes)
      */
     public function calculateTotalBalance()
@@ -89,5 +97,21 @@ class Person extends Model
     public function getTotalBalanceWithFloatingAttribute()
     {
         return $this->total_balance + $this->floating_balance;
+    }
+
+    /**
+     * Enregistrer une transaction
+     */
+    public function logTransaction($type, $amount, $balanceBefore, $balanceAfter, $balanceType, $description = null, $groupId = null)
+    {
+        return $this->transactions()->create([
+            'type' => $type,
+            'amount' => $amount,
+            'balance_before' => $balanceBefore,
+            'balance_after' => $balanceAfter,
+            'balance_type' => $balanceType,
+            'description' => $description,
+            'group_id' => $groupId,
+        ]);
     }
 }

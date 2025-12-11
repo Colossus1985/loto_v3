@@ -28,6 +28,7 @@ Route::delete('groups/{id}/force-destroy',                  [GroupController::cl
 Route::post('groups/{group}/add-person',                    [GroupController::class, 'addPerson'])->name('groups.add-person');
 Route::delete('groups/{group}/remove-person/{person}',      [GroupController::class, 'removePerson'])->name('groups.remove-person');
 Route::post('groups/{group}/add-funds/{person}',            [GroupController::class, 'addFunds'])->name('groups.add-funds');
+Route::post('groups/{group}/withdraw-funds/{person}',       [GroupController::class, 'withdrawFundsFromGroup'])->name('groups.withdraw-funds');
 Route::post('groups/{group}/transfer-from-floating/{person}', [GroupController::class, 'transferFromFloating'])->name('groups.transfer-from-floating');
 Route::get('groups/{group}/games-data',                     [GroupController::class, 'getGamesData'])->name('groups.games-data');
 

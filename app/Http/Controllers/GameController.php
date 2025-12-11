@@ -39,7 +39,7 @@ class GameController extends Controller
 
         DB::transaction(function () use ($group, $validated, $costPerPerson, $personCount) {
             // Créer l'enregistrement du jeu
-            Game::create([
+            $game = Game::create([
                 'group_id' => $group->id,
                 'amount' => $validated['amount'],
                 'cost_per_person' => $costPerPerson,
@@ -54,11 +54,24 @@ class GameController extends Controller
                 $group->persons()->updateExistingPivot($person->id, [
                     'balance' => $newBalance
                 ]);
+                
+                $totalBalanceBefore = $person->total_balance;
 
                 // Mettre à jour le total_balance de la personne
                 $person->update([
                     'total_balance' => $person->calculateTotalBalance()
                 ]);
+                
+                // Enregistrer la transaction
+                $person->logTransaction(
+                    'game_played',
+                    -$costPerPerson,
+                    $totalBalanceBefore,
+                    $person->total_balance,
+                    'group',
+                    "Jeu joué dans le groupe {$group->name} - Mise: {$validated['amount']}€",
+                    $group->id
+                );
             }
 
             // Mettre à jour le total_budget du groupe
@@ -119,11 +132,24 @@ class GameController extends Controller
                 $group->persons()->updateExistingPivot($person->id, [
                     'balance' => $newBalance
                 ]);
+                
+                $totalBalanceBefore = $person->total_balance;
 
                 // Mettre à jour le total_balance de la personne
                 $person->update([
                     'total_balance' => $person->calculateTotalBalance()
                 ]);
+                
+                // Enregistrer la transaction
+                $person->logTransaction(
+                    'game_won',
+                    $winningsPerPerson,
+                    $totalBalanceBefore,
+                    $person->total_balance,
+                    'group',
+                    "Gain dans le groupe {$group->name} - Total gains: {$validated['winnings']}€",
+                    $group->id
+                );
             }
 
             // Mettre à jour le total_budget et total_winnings du groupe

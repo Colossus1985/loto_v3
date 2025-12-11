@@ -105,6 +105,11 @@
                             <button type="button" class="btn btn-sm btn-success" onclick="document.getElementById('addFundsForm{{ $person->id }}').classList.toggle('d-none')">
                                 <i class="bi bi-cash-coin"></i> Ajouter Fonds
                             </button>
+                            @if($person->pivot->balance > 0)
+                                <button type="button" class="btn btn-sm btn-warning" onclick="document.getElementById('withdrawForm{{ $person->id }}').classList.toggle('d-none')">
+                                    <i class="bi bi-dash-circle"></i> Retirer Fonds
+                                </button>
+                            @endif
                             @if($person->floating_balance > 0)
                                 <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('transferForm{{ $person->id }}').classList.toggle('d-none')">
                                     <i class="bi bi-arrow-down-circle"></i> Transférer du Flottant
@@ -141,6 +146,32 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Formulaire de retrait de fonds -->
+                        @if($person->pivot->balance > 0)
+                        <div id="withdrawForm{{ $person->id }}" class="d-none mt-2">
+                            <div class="card border-warning">
+                                <div class="card-body bg-warning bg-opacity-10">
+                                    <h6 class="card-title"><i class="bi bi-cash-stack"></i> Retirer des fonds du groupe</h6>
+                                    <small class="text-muted d-block mb-2">{{ number_format($person->pivot->balance, 2) }}€ disponibles</small>
+                                    <form action="{{ route('groups.withdraw-funds', [$group, $person]) }}" method="POST" class="row g-2">
+                                        @csrf
+                                        <div class="col-auto">
+                                            <input type="number" name="amount" step="0.01" min="0.01" max="{{ $person->pivot->balance }}" class="form-control form-control-sm" placeholder="Montant (€)" required>
+                                        </div>
+                                        <div class="col-auto">
+                                            <button type="submit" class="btn btn-sm btn-warning">
+                                                <i class="bi bi-check-circle"></i> Retirer
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('withdrawForm{{ $person->id }}').classList.add('d-none')">
+                                                <i class="bi bi-x-circle"></i> Annuler
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                         
                         <!-- Formulaire de transfert depuis le flottant -->
                         @if($person->floating_balance > 0)
@@ -197,6 +228,87 @@
         </form>
     </div>
 </div>
+
+<h2 class="mt-5 mb-3"><i class="bi bi-receipt text-info"></i> Historique des Transactions</h2>
+@if($transactions->isEmpty())
+    <div class="alert alert-info" role="alert">
+        <i class="bi bi-info-circle me-2"></i>Aucune transaction enregistrée pour ce groupe.
+    </div>
+@else
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th><i class="bi bi-calendar-event"></i> Date</th>
+                            <th><i class="bi bi-person-fill"></i> Personne</th>
+                            <th><i class="bi bi-tag"></i> Type</th>
+                            <th class="text-end"><i class="bi bi-cash"></i> Montant</th>
+                            <th class="text-end"><i class="bi bi-graph-down"></i> Solde Avant</th>
+                            <th class="text-end"><i class="bi bi-graph-up"></i> Solde Après</th>
+                            <th><i class="bi bi-chat-left-text"></i> Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($transactions as $transaction)
+                        <tr>
+                            <td>
+                                <small class="text-muted">
+                                    {{ $transaction->created_at->format('d/m/Y H:i') }}
+                                </small>
+                            </td>
+                            <td>
+                                <a href="{{ route('persons.show', $transaction->person) }}" class="text-decoration-none">
+                                    <i class="bi bi-person-fill"></i> {{ $transaction->person->display_name }}
+                                </a>
+                            </td>
+                            <td>
+                                @php
+                                    $typeConfig = [
+                                        'add_floating' => ['icon' => 'plus-circle-fill', 'color' => 'success', 'label' => 'Ajout Flottant'],
+                                        'withdraw_floating' => ['icon' => 'dash-circle-fill', 'color' => 'danger', 'label' => 'Retrait Flottant'],
+                                        'join_group' => ['icon' => 'box-arrow-in-right', 'color' => 'primary', 'label' => 'Adhésion'],
+                                        'leave_group' => ['icon' => 'box-arrow-right', 'color' => 'warning', 'label' => 'Départ'],
+                                        'add_group_funds' => ['icon' => 'piggy-bank-fill', 'color' => 'info', 'label' => 'Ajout Fonds'],
+                                        'withdraw_group_funds' => ['icon' => 'cash-stack', 'color' => 'warning', 'label' => 'Retrait Fonds'],
+                                        'transfer_to_group' => ['icon' => 'arrow-left-right', 'color' => 'secondary', 'label' => 'Transfert'],
+                                        'game_played' => ['icon' => 'dice-5-fill', 'color' => 'danger', 'label' => 'Jeu Joué'],
+                                        'game_won' => ['icon' => 'trophy-fill', 'color' => 'success', 'label' => 'Gain'],
+                                    ];
+                                    $config = $typeConfig[$transaction->type] ?? ['icon' => 'question-circle', 'color' => 'secondary', 'label' => $transaction->type];
+                                @endphp
+                                <span class="badge bg-{{ $config['color'] }}">
+                                    <i class="bi bi-{{ $config['icon'] }}"></i> {{ $config['label'] }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <strong class="{{ $transaction->amount >= 0 ? 'text-success' : 'text-danger' }}">
+                                    <i class="bi bi-{{ $transaction->amount >= 0 ? 'plus' : 'dash' }}-circle-fill"></i>
+                                    {{ number_format(abs($transaction->amount), 2) }}€
+                                </strong>
+                            </td>
+                            <td class="text-end">
+                                <span class="text-muted">{{ number_format($transaction->balance_before, 2) }}€</span>
+                            </td>
+                            <td class="text-end">
+                                <strong class="{{ $transaction->balance_after >= $transaction->balance_before ? 'text-success' : 'text-danger' }}">
+                                    {{ number_format($transaction->balance_after, 2) }}€
+                                </strong>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ $transaction->description ?? '-' }}
+                                </small>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+@endif
 
 <h2 class="mt-5 mb-3"><i class="bi bi-clock-history text-info"></i> Historique des Jeux</h2>
 <div class="card border-0 shadow-sm">
