@@ -304,6 +304,7 @@
                             <th><i class="bi bi-calendar-event"></i> Date</th>
                             <th><i class="bi bi-tag"></i> Type</th>
                             <th><i class="bi bi-people-fill"></i> Groupe</th>
+                            <th class="text-center"><i class="bi bi-wallet2"></i> Type Solde</th>
                             <th class="text-end"><i class="bi bi-cash"></i> Montant</th>
                             <th class="text-end"><i class="bi bi-graph-down"></i> Solde Avant</th>
                             <th class="text-end"><i class="bi bi-graph-up"></i> Solde Après</th>
@@ -330,8 +331,16 @@
                                         'transfer_to_group' => ['icon' => 'arrow-left-right', 'color' => 'secondary', 'label' => 'Transfert'],
                                         'game_played' => ['icon' => 'dice-5-fill', 'color' => 'danger', 'label' => 'Jeu Joué'],
                                         'game_won' => ['icon' => 'trophy-fill', 'color' => 'success', 'label' => 'Gain'],
+                                        'correction' => ['icon' => 'exclamation-triangle-fill', 'color' => 'warning', 'label' => 'Correction'],
                                     ];
                                     $config = $typeConfig[$transaction->type] ?? ['icon' => 'question-circle', 'color' => 'secondary', 'label' => $transaction->type];
+                                    
+                                    $balanceTypeConfig = [
+                                        'floating' => ['label' => 'Flottant', 'color' => 'info', 'icon' => 'piggy-bank'],
+                                        'group' => ['label' => 'Groupe', 'color' => 'primary', 'icon' => 'people'],
+                                        'total' => ['label' => 'Total', 'color' => 'success', 'icon' => 'wallet2'],
+                                    ];
+                                    $balanceConfig = $balanceTypeConfig[$transaction->balance_type] ?? ['label' => $transaction->balance_type, 'color' => 'secondary', 'icon' => 'question'];
                                 @endphp
                                 <span class="badge bg-{{ $config['color'] }}">
                                     <i class="bi bi-{{ $config['icon'] }}"></i> {{ $config['label'] }}
@@ -345,6 +354,11 @@
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-{{ $balanceConfig['color'] }} bg-opacity-25 text-{{ $balanceConfig['color'] }}">
+                                    <i class="bi bi-{{ $balanceConfig['icon'] }}"></i> {{ $balanceConfig['label'] }}
+                                </span>
                             </td>
                             <td class="text-end">
                                 <strong class="{{ $transaction->amount >= 0 ? 'text-success' : 'text-danger' }}">

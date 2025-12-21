@@ -162,4 +162,119 @@ class GameController extends Controller
         return redirect()->route('groups.show', $group)
             ->with('success', "Gain enregistré! Montant: {$validated['winnings']}€, Gain par personne: " . number_format($winningsPerPerson, 2) . "€");
     }
+
+    /**
+     * Supprimer un jeu et effectuer les corrections nécessaires
+     */
+    public function destroy(Game $game)
+    {
+        $group = $game->group;
+        
+        // Récupérer les personnes qui étaient dans le groupe au moment du jeu
+        // On va utiliser les personnes actuelles du groupe pour simplifier
+        $persons = $group->persons;
+        
+        if ($persons->count() == 0) {
+            return redirect()->back()
+                ->with('error', 'Impossible de supprimer ce jeu: aucune personne dans le groupe.');
+        }
+
+        DB::transaction(function () use ($game, $group, $persons) {
+            $costPerPerson = $game->cost_per_person;
+            $hasWinnings = $game->is_winner;
+            $winningsPerPerson = $hasWinnings ? ($game->winnings / $persons->count()) : 0;
+
+            // Traiter chaque personne
+            foreach ($persons as $person) {
+                // 1. Rembourser le coût du jeu en fonds flottants
+                $floatingBalanceBefore = $person->floating_balance;
+                $floatingBalanceAfter = $floatingBalanceBefore + $costPerPerson;
+                
+                $person->update([
+                    'floating_balance' => $floatingBalanceAfter
+                ]);
+
+                // Enregistrer la transaction de correction pour le remboursement
+                $person->logTransaction(
+                    'correction',
+                    $costPerPerson,
+                    $floatingBalanceBefore,
+                    $floatingBalanceAfter,
+                    'floating',
+                    "Correction: Remboursement du jeu supprimé (Groupe: {$group->name}, Date: {$game->game_date}, Mise: {$game->amount}€)",
+                    null
+                );
+
+                // 2. Si le jeu avait des gains, les retirer des fonds flottants
+                // NOTE: On ne retire PAS les gains des fonds flottants car ils n'y ont jamais été ajoutés
+                // Les gains ont été crédités directement au balance du groupe
+
+                // 3. Ajuster le balance du groupe en retirant le coût
+                $balanceBeforeGroupAdjustment = $person->pivot->balance;
+                $balanceAfterGroupAdjustment = $balanceBeforeGroupAdjustment + $costPerPerson;
+                
+                $group->persons()->updateExistingPivot($person->id, [
+                    'balance' => $balanceAfterGroupAdjustment
+                ]);
+
+                // Enregistrer la transaction de correction pour l'ajustement du groupe
+                $totalBalanceBefore = $person->total_balance;
+                
+                // Mettre à jour le total_balance de la personne
+                $person->update([
+                    'total_balance' => $person->calculateTotalBalance()
+                ]);
+
+                $person->logTransaction(
+                    'correction',
+                    $costPerPerson,
+                    $totalBalanceBefore,
+                    $person->total_balance,
+                    'group',
+                    "Correction: Ajustement du solde groupe suite à la suppression du jeu (Date: {$game->game_date}, Mise: {$game->amount}€)",
+                    $group->id
+                );
+
+                // 4. Si le jeu avait des gains, les retirer aussi du balance du groupe
+                if ($hasWinnings && $winningsPerPerson > 0) {
+                    $balanceBeforeWinningsAdjustment = $person->pivot->balance;
+                    $balanceAfterWinningsAdjustment = $balanceBeforeWinningsAdjustment - $winningsPerPerson;
+                    
+                    $group->persons()->updateExistingPivot($person->id, [
+                        'balance' => $balanceAfterWinningsAdjustment
+                    ]);
+
+                    // Enregistrer la transaction de correction pour le retrait des gains du groupe
+                    $totalBalanceBefore = $person->total_balance;
+                    
+                    // Mettre à jour le total_balance de la personne
+                    $person->update([
+                        'total_balance' => $person->calculateTotalBalance()
+                    ]);
+
+                    $person->logTransaction(
+                        'correction',
+                        -$winningsPerPerson,
+                        $totalBalanceBefore,
+                        $person->total_balance,
+                        'group',
+                        "Correction: Retrait des gains du groupe suite à la suppression du jeu (Date: {$game->game_date}, Gains: {$game->winnings}€)",
+                        $group->id
+                    );
+                }
+            }
+
+            // Mettre à jour les totaux du groupe
+            $group->update([
+                'total_budget' => $group->calculateTotalBudget(),
+                'total_winnings' => $hasWinnings ? ($group->total_winnings - $game->winnings) : $group->total_winnings
+            ]);
+
+            // Supprimer le jeu
+            $game->delete();
+        });
+
+        return redirect()->route('groups.show', $group)
+            ->with('success', 'Jeu supprimé avec succès. Les corrections ont été appliquées aux comptes des participants.');
+    }
 }

@@ -80,7 +80,7 @@ class Person extends Model
      */
     public function transactions()
     {
-        return $this->hasMany(PersonTransaction::class)->orderBy('created_at', 'desc');
+        return $this->hasMany(PersonTransaction::class)->orderBy('created_at', 'desc')->orderBy('id', 'desc');
     }
 
     /**

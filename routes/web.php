@@ -35,6 +35,7 @@ Route::get('groups/{group}/games-data',                     [GroupController::cl
 // Routes pour les jeux
 Route::get('groups/{group}/play',                           [GameController::class, 'create'])->name('games.create');
 Route::post('groups/{group}/play',                          [GameController::class, 'store'])->name('games.store');
+Route::delete('games/{game}',                               [GameController::class, 'destroy'])->name('games.destroy');
 
 // Routes pour les gains
 Route::get('games/{game}/win',                              [GameController::class, 'showWinForm'])->name('games.win');

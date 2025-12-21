@@ -275,6 +275,7 @@
                                         'transfer_to_group' => ['icon' => 'arrow-left-right', 'color' => 'secondary', 'label' => 'Transfert'],
                                         'game_played' => ['icon' => 'dice-5-fill', 'color' => 'danger', 'label' => 'Jeu Joué'],
                                         'game_won' => ['icon' => 'trophy-fill', 'color' => 'success', 'label' => 'Gain'],
+                                        'correction' => ['icon' => 'exclamation-triangle-fill', 'color' => 'warning', 'label' => 'Correction'],
                                     ];
                                     $config = $typeConfig[$transaction->type] ?? ['icon' => 'question-circle', 'color' => 'secondary', 'label' => $transaction->type];
                                 @endphp
@@ -432,10 +433,7 @@ $(document).ready(function() {
                 searchable: false,
                 className: 'text-center',
                 render: function(data, type, row) {
-                    if (!row.is_winner && data) {
-                        return '<a href="' + data + '" class="btn btn-sm btn-success"><i class="bi bi-trophy-fill"></i> Enregistrer Gain</a>';
-                    }
-                    return '';
+                    return data;
                 }
             }
         ],

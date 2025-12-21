@@ -58,6 +58,7 @@ class GroupController extends Controller
         $transactions = \App\Models\PersonTransaction::where('group_id', $group->id)
             ->with('person')
             ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->get();
         
         return view('groups.show', compact('group', 'availablePersons', 'transactions'));
@@ -109,6 +110,16 @@ class GroupController extends Controller
                 ? number_format($game->winnings / $personsCount, 2) . '€' 
                 : '-';
             
+            $actions = '';
+            if (!$game->is_winner) {
+                $actions .= '<a href="' . route('games.win', $game) . '" class="btn btn-sm btn-success me-1"><i class="bi bi-trophy-fill"></i> Gain</a>';
+            }
+            $actions .= '<form action="' . route('games.destroy', $game) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Êtes-vous sûr de vouloir supprimer ce jeu ? Les coûts seront remboursés en fonds flottants et les gains retirés.\')">
+                <input type="hidden" name="_token" value="' . csrf_token() . '">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash-fill"></i> Supprimer</button>
+            </form>';
+            
             return [
                 'game_date' => $game->game_date->format('d/m/Y'),
                 'amount' => number_format($game->amount, 2) . '€',
@@ -117,7 +128,7 @@ class GroupController extends Controller
                 'winnings_per_person' => $winningsPerPerson,
                 'status' => $game->is_winner ? 'Gagné' : 'Pas gagné',
                 'is_winner' => $game->is_winner,
-                'actions' => $game->is_winner ? '' : route('games.win', $game),
+                'actions' => $actions,
                 'game_id' => $game->id
             ];
         });
