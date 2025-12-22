@@ -289,16 +289,18 @@
     </div>
 @endif
 
-<h2 class="mb-3 mt-5"><i class="bi bi-receipt text-info"></i> Historique des Transactions</h2>
-@if($person->transactions->isEmpty())
-    <div class="alert alert-info" role="alert">
-        <i class="bi bi-info-circle me-2"></i>Aucune transaction enregistrée pour le moment.
-    </div>
-@else
-    <div class="card border-0 shadow-sm">
+<h2 class="mb-3 mt-5">
+    <button class="btn btn-link text-decoration-none p-0 text-start w-100 d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#personTransactionsCollapse" aria-expanded="false" aria-controls="personTransactionsCollapse">
+        <i class="bi bi-receipt text-info me-2"></i>
+        <span>Historique des Transactions</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+    </button>
+</h2>
+<div class="collapse shadow" id="personTransactionsCollapse">
+    <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table id="personTransactionsTable" class="table table-hover align-middle" style="width:100%">
                     <thead class="table-light">
                         <tr>
                             <th><i class="bi bi-calendar-event"></i> Date</th>
@@ -311,88 +313,24 @@
                             <th><i class="bi bi-chat-left-text"></i> Description</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach($person->transactions as $transaction)
-                        <tr>
-                            <td>
-                                <small class="text-muted">
-                                    {{ $transaction->created_at->format('d/m/Y H:i') }}
-                                </small>
-                            </td>
-                            <td>
-                                @php
-                                    $typeConfig = [
-                                        'add_floating' => ['icon' => 'plus-circle-fill', 'color' => 'success', 'label' => 'Ajout Flottant'],
-                                        'withdraw_floating' => ['icon' => 'dash-circle-fill', 'color' => 'danger', 'label' => 'Retrait Flottant'],
-                                        'join_group' => ['icon' => 'box-arrow-in-right', 'color' => 'primary', 'label' => 'Adhésion Groupe'],
-                                        'leave_group' => ['icon' => 'box-arrow-right', 'color' => 'warning', 'label' => 'Départ Groupe'],
-                                        'add_group_funds' => ['icon' => 'piggy-bank-fill', 'color' => 'info', 'label' => 'Ajout Groupe'],
-                                        'withdraw_group_funds' => ['icon' => 'cash-stack', 'color' => 'warning', 'label' => 'Retrait Groupe'],
-                                        'transfer_to_group' => ['icon' => 'arrow-left-right', 'color' => 'secondary', 'label' => 'Transfert'],
-                                        'game_played' => ['icon' => 'dice-5-fill', 'color' => 'danger', 'label' => 'Jeu Joué'],
-                                        'game_won' => ['icon' => 'trophy-fill', 'color' => 'success', 'label' => 'Gain'],
-                                        'correction' => ['icon' => 'exclamation-triangle-fill', 'color' => 'warning', 'label' => 'Correction'],
-                                    ];
-                                    $config = $typeConfig[$transaction->type] ?? ['icon' => 'question-circle', 'color' => 'secondary', 'label' => $transaction->type];
-                                    
-                                    $balanceTypeConfig = [
-                                        'floating' => ['label' => 'Flottant', 'color' => 'info', 'icon' => 'piggy-bank'],
-                                        'group' => ['label' => 'Groupe', 'color' => 'primary', 'icon' => 'people'],
-                                        'total' => ['label' => 'Total', 'color' => 'success', 'icon' => 'wallet2'],
-                                    ];
-                                    $balanceConfig = $balanceTypeConfig[$transaction->balance_type] ?? ['label' => $transaction->balance_type, 'color' => 'secondary', 'icon' => 'question'];
-                                @endphp
-                                <span class="badge bg-{{ $config['color'] }}">
-                                    <i class="bi bi-{{ $config['icon'] }}"></i> {{ $config['label'] }}
-                                </span>
-                            </td>
-                            <td>
-                                @if($transaction->group)
-                                    <a href="{{ route('groups.show', $transaction->group) }}" class="text-decoration-none">
-                                        <i class="bi bi-people-fill"></i> {{ $transaction->group->name }}
-                                    </a>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-{{ $balanceConfig['color'] }} bg-opacity-25 text-{{ $balanceConfig['color'] }}">
-                                    <i class="bi bi-{{ $balanceConfig['icon'] }}"></i> {{ $balanceConfig['label'] }}
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <strong class="{{ $transaction->amount >= 0 ? 'text-success' : 'text-danger' }}">
-                                    <i class="bi bi-{{ $transaction->amount >= 0 ? 'plus' : 'dash' }}-circle-fill"></i>
-                                    {{ number_format(abs($transaction->amount), 2) }}€
-                                </strong>
-                            </td>
-                            <td class="text-end">
-                                <span class="text-muted">{{ number_format($transaction->balance_before, 2) }}€</span>
-                            </td>
-                            <td class="text-end">
-                                <strong class="{{ $transaction->balance_after >= $transaction->balance_before ? 'text-success' : 'text-danger' }}">
-                                    {{ number_format($transaction->balance_after, 2) }}€
-                                </strong>
-                            </td>
-                            <td>
-                                <small class="text-muted">
-                                    {{ $transaction->description ?? '-' }}
-                                </small>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
                 </table>
             </div>
         </div>
     </div>
-@endif
+</div>
 
-<h2 class="mb-3 mt-5"><i class="bi bi-clock-history text-info"></i> Historique des Mouvements</h2>
-<div class="card border-0 shadow-sm">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table id="transactionsTable" class="table table-hover align-middle" style="width:100%">
+<h2 class="mb-3 mt-5">
+    <button class="btn btn-link text-decoration-none p-0 text-start w-100 d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#movementsCollapse" aria-expanded="true" aria-controls="movementsCollapse">
+        <i class="bi bi-clock-history text-info me-2"></i>
+        <span>Historique des Mouvements</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+    </button>
+</h2>
+<div class="collapse show shadow" id="movementsCollapse">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="transactionsTable" class="table table-hover align-middle" style="width:100%">
                 <thead class="table-light">
                     <tr>
                         <th><i class="bi bi-calendar-event"></i> Date</th>
@@ -421,6 +359,7 @@
         </div>
     </div>
 </div>
+</div>
 
 <div class="d-flex gap-2 mt-4">
     <a href="{{ route('persons.edit', $person) }}" class="btn btn-warning btn-sm">
@@ -446,9 +385,16 @@
 
 <script>
 $(document).ready(function() {
-    $('#transactionsTable').DataTable({
-        processing: true,
-        serverSide: true,
+    // Variables pour vérifier si les DataTables ont été initialisées
+    var transactionsTableInitialized = false;
+    var personTransactionsTableInitialized = false;
+
+    // Fonction pour initialiser le tableau des mouvements (jeux)
+    function initTransactionsTable() {
+        if (!transactionsTableInitialized) {
+            $('#transactionsTable').DataTable({
+                processing: true,
+                serverSide: true,
         ajax: {
             url: "{{ route('persons.transactions-data', $person) }}",
             type: 'GET'
@@ -567,6 +513,99 @@ $(document).ready(function() {
                 }
             }
         }
+    });
+            transactionsTableInitialized = true;
+        }
+    }
+
+    // Fonction pour initialiser le tableau des transactions personnelles
+    function initPersonTransactionsTable() {
+        if (!personTransactionsTableInitialized) {
+            $('#personTransactionsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('persons.person-transactions-data', $person) }}",
+            type: 'GET'
+        },
+        columns: [
+            { 
+                data: 'date',
+                orderable: true
+            },
+            { 
+                data: 'type',
+                orderable: true
+            },
+            { 
+                data: 'group',
+                orderable: false
+            },
+            { 
+                data: 'balance_type',
+                orderable: true,
+                className: 'text-center'
+            },
+            { 
+                data: 'amount',
+                orderable: true,
+                className: 'text-end'
+            },
+            { 
+                data: 'balance_before',
+                orderable: true,
+                className: 'text-end'
+            },
+            { 
+                data: 'balance_after',
+                orderable: true,
+                className: 'text-end'
+            },
+            { 
+                data: 'description',
+                orderable: false
+            }
+        ],
+        order: [[0, 'desc']],
+        language: {
+            processing: "Traitement en cours...",
+            search: "Rechercher&nbsp;:",
+            lengthMenu: "Afficher _MENU_ éléments",
+            info: "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+            infoEmpty: "Affichage de l'élément 0 à 0 sur 0 élément",
+            infoFiltered: "(filtré de _MAX_ éléments au total)",
+            infoPostFix: "",
+            loadingRecords: "Chargement en cours...",
+            zeroRecords: "Aucune transaction à afficher",
+            emptyTable: "Aucune transaction enregistrée pour cette personne",
+            paginate: {
+                first: "Premier",
+                previous: "Précédent",
+                next: "Suivant",
+                last: "Dernier"
+            },
+            aria: {
+                sortAscending: ": activer pour trier la colonne par ordre croissant",
+                sortDescending: ": activer pour trier la colonne par ordre décroissant"
+            }
+        },
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]]
+    });
+            personTransactionsTableInitialized = true;
+        }
+    }
+
+    // Initialiser le tableau des mouvements au chargement (collapse ouvert par défaut)
+    initTransactionsTable();
+
+    // Initialiser les tableaux quand le collapse est ouvert
+    $('#movementsCollapse').on('shown.bs.collapse', function () {
+        initTransactionsTable();
+    });
+
+    $('#personTransactionsCollapse').on('shown.bs.collapse', function () {
+        initPersonTransactionsTable();
     });
 });
 </script>

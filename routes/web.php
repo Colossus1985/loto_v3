@@ -18,6 +18,7 @@ Route::post('persons/{person}/join-group',                  [PersonController::c
 Route::post('persons/{person}/add-floating-funds',          [PersonController::class, 'addFloatingFunds'])->name('persons.add-floating-funds');
 Route::post('persons/{person}/withdraw-funds',              [PersonController::class, 'withdrawFunds'])->name('persons.withdraw-funds');
 Route::get('persons/{person}/transactions-data',            [PersonController::class, 'getTransactionsData'])->name('persons.transactions-data');
+Route::get('persons/{person}/person-transactions-data',     [PersonController::class, 'getPersonTransactionsData'])->name('persons.person-transactions-data');
 Route::post('persons/{id}/restore',                         [PersonController::class, 'restore'])->name('persons.restore');
 Route::delete('persons/{id}/force-destroy',                 [PersonController::class, 'forceDestroy'])->name('persons.force-destroy');
 
@@ -31,6 +32,7 @@ Route::post('groups/{group}/add-funds/{person}',            [GroupController::cl
 Route::post('groups/{group}/withdraw-funds/{person}',       [GroupController::class, 'withdrawFundsFromGroup'])->name('groups.withdraw-funds');
 Route::post('groups/{group}/transfer-from-floating/{person}', [GroupController::class, 'transferFromFloating'])->name('groups.transfer-from-floating');
 Route::get('groups/{group}/games-data',                     [GroupController::class, 'getGamesData'])->name('groups.games-data');
+Route::get('groups/{group}/transactions-data',              [GroupController::class, 'getTransactionsData'])->name('groups.transactions-data');
 
 // Routes pour les jeux
 Route::get('groups/{group}/play',                           [GameController::class, 'create'])->name('games.create');

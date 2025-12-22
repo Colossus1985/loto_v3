@@ -229,16 +229,18 @@
     </div>
 </div>
 
-<h2 class="mt-5 mb-3"><i class="bi bi-receipt text-info"></i> Historique des Transactions</h2>
-@if($transactions->isEmpty())
-    <div class="alert alert-info" role="alert">
-        <i class="bi bi-info-circle me-2"></i>Aucune transaction enregistrée pour ce groupe.
-    </div>
-@else
+<h2 class="mt-5 mb-3">
+    <button class="btn btn-link text-decoration-none p-0 text-start w-100 d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#transactionsCollapse" aria-expanded="false" aria-controls="transactionsCollapse">
+        <i class="bi bi-receipt text-info me-2"></i>
+        <span>Historique des Transactions</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+    </button>
+</h2>
+<div class="collapse shadow" id="transactionsCollapse">
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table id="transactionsTable" class="table table-hover align-middle" style="width:100%">
                     <thead class="table-light">
                         <tr>
                             <th><i class="bi bi-calendar-event"></i> Date</th>
@@ -250,72 +252,24 @@
                             <th><i class="bi bi-chat-left-text"></i> Description</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach($transactions as $transaction)
-                        <tr>
-                            <td>
-                                <small class="text-muted">
-                                    {{ $transaction->created_at->format('d/m/Y H:i') }}
-                                </small>
-                            </td>
-                            <td>
-                                <a href="{{ route('persons.show', $transaction->person) }}" class="text-decoration-none">
-                                    <i class="bi bi-person-fill"></i> {{ $transaction->person->display_name }}
-                                </a>
-                            </td>
-                            <td>
-                                @php
-                                    $typeConfig = [
-                                        'add_floating' => ['icon' => 'plus-circle-fill', 'color' => 'success', 'label' => 'Ajout Flottant'],
-                                        'withdraw_floating' => ['icon' => 'dash-circle-fill', 'color' => 'danger', 'label' => 'Retrait Flottant'],
-                                        'join_group' => ['icon' => 'box-arrow-in-right', 'color' => 'primary', 'label' => 'Adhésion'],
-                                        'leave_group' => ['icon' => 'box-arrow-right', 'color' => 'warning', 'label' => 'Départ'],
-                                        'add_group_funds' => ['icon' => 'piggy-bank-fill', 'color' => 'info', 'label' => 'Ajout Fonds'],
-                                        'withdraw_group_funds' => ['icon' => 'cash-stack', 'color' => 'warning', 'label' => 'Retrait Fonds'],
-                                        'transfer_to_group' => ['icon' => 'arrow-left-right', 'color' => 'secondary', 'label' => 'Transfert'],
-                                        'game_played' => ['icon' => 'dice-5-fill', 'color' => 'danger', 'label' => 'Jeu Joué'],
-                                        'game_won' => ['icon' => 'trophy-fill', 'color' => 'success', 'label' => 'Gain'],
-                                        'correction' => ['icon' => 'exclamation-triangle-fill', 'color' => 'warning', 'label' => 'Correction'],
-                                    ];
-                                    $config = $typeConfig[$transaction->type] ?? ['icon' => 'question-circle', 'color' => 'secondary', 'label' => $transaction->type];
-                                @endphp
-                                <span class="badge bg-{{ $config['color'] }}">
-                                    <i class="bi bi-{{ $config['icon'] }}"></i> {{ $config['label'] }}
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <strong class="{{ $transaction->amount >= 0 ? 'text-success' : 'text-danger' }}">
-                                    <i class="bi bi-{{ $transaction->amount >= 0 ? 'plus' : 'dash' }}-circle-fill"></i>
-                                    {{ number_format(abs($transaction->amount), 2) }}€
-                                </strong>
-                            </td>
-                            <td class="text-end">
-                                <span class="text-muted">{{ number_format($transaction->balance_before, 2) }}€</span>
-                            </td>
-                            <td class="text-end">
-                                <strong class="{{ $transaction->balance_after >= $transaction->balance_before ? 'text-success' : 'text-danger' }}">
-                                    {{ number_format($transaction->balance_after, 2) }}€
-                                </strong>
-                            </td>
-                            <td>
-                                <small class="text-muted">
-                                    {{ $transaction->description ?? '-' }}
-                                </small>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
                 </table>
             </div>
         </div>
     </div>
-@endif
+</div>
 
-<h2 class="mt-5 mb-3"><i class="bi bi-clock-history text-info"></i> Historique des Jeux</h2>
-<div class="card border-0 shadow-sm">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table id="gamesTable" class="table table-hover align-middle" style="width:100%">
+<h2 class="mt-5 mb-3">
+    <button class="btn btn-link text-decoration-none p-0 text-start w-100 d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#gamesCollapse" aria-expanded="true" aria-controls="gamesCollapse">
+        <i class="bi bi-clock-history text-info me-2"></i>
+        <span>Historique des Jeux</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+    </button>
+</h2>
+<div class="collapse show shadow" id="gamesCollapse">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="gamesTable" class="table table-hover align-middle" style="width:100%">
                 <thead class="table-light">
                     <tr>
                         <th><i class="bi bi-calendar-event"></i> Date du Jeu</th>
@@ -342,6 +296,7 @@
         </div>
     </div>
 </div>
+</div>
 
 <div class="d-flex gap-2 mt-4">
     <a href="{{ route('groups.edit', $group) }}" class="btn btn-warning">
@@ -367,113 +322,208 @@
 
 <script>
 $(document).ready(function() {
-    $('#gamesTable').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: "{{ route('groups.games-data', $group) }}",
-            type: 'GET'
-        },
-        columns: [
-            { 
-                data: 'game_date',
-                orderable: true,
-                render: function(data) {
-                    return '<strong>' + data + '</strong>';
-                }
-            },
-            { 
-                data: 'amount',
-                orderable: true,
-                render: function(data) {
-                    return '<span class="negative"><i class="bi bi-dash-circle-fill"></i> ' + data + '</span>';
-                }
-            },
-            { 
-                data: 'cost_per_person',
-                orderable: true,
-                render: function(data) {
-                    return '<span class="negative"><i class="bi bi-dash-circle-fill"></i> ' + data + '</span>';
-                }
-            },
-            { 
-                data: 'winnings',
-                orderable: true,
-                render: function(data, type, row) {
-                    if (row.is_winner) {
-                        return '<span class="positive"><i class="bi bi-plus-circle-fill"></i> ' + data + '</span>';
+    // Variable pour vérifier si les DataTables ont été initialisées
+    var gamesTableInitialized = false;
+    var transactionsTableInitialized = false;
+
+    // Fonction pour initialiser le tableau des jeux
+    function initGamesTable() {
+        if (!gamesTableInitialized) {
+            $('#gamesTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('groups.games-data', $group) }}",
+                    type: 'GET'
+                },
+                columns: [
+                    { 
+                        data: 'game_date',
+                        orderable: true,
+                        render: function(data) {
+                            return '<strong>' + data + '</strong>';
+                        }
+                    },
+                    { 
+                        data: 'amount',
+                        orderable: true,
+                        render: function(data) {
+                            return '<span class="negative"><i class="bi bi-dash-circle-fill"></i> ' + data + '</span>';
+                        }
+                    },
+                    { 
+                        data: 'cost_per_person',
+                        orderable: true,
+                        render: function(data) {
+                            return '<span class="negative"><i class="bi bi-dash-circle-fill"></i> ' + data + '</span>';
+                        }
+                    },
+                    { 
+                        data: 'winnings',
+                        orderable: true,
+                        render: function(data, type, row) {
+                            if (row.is_winner) {
+                                return '<span class="positive"><i class="bi bi-plus-circle-fill"></i> ' + data + '</span>';
+                            }
+                            return '<span class="text-muted">-</span>';
+                        }
+                    },
+                    { 
+                        data: 'winnings_per_person',
+                        orderable: false,
+                        render: function(data, type, row) {
+                            if (row.is_winner) {
+                                return '<span class="positive"><i class="bi bi-plus-circle-fill"></i> ' + data + '</span>';
+                            }
+                            return '<span class="text-muted">-</span>';
+                        }
+                    },
+                    { 
+                        data: 'status',
+                        orderable: true,
+                        className: 'text-center',
+                        render: function(data, type, row) {
+                            if (row.is_winner) {
+                                return '<span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Gagné</span>';
+                            }
+                            return '<span class="badge bg-secondary"><i class="bi bi-x-circle"></i> Pas gagné</span>';
+                        }
+                    },
+                    { 
+                        data: 'actions',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center',
+                        render: function(data, type, row) {
+                            return data;
+                        }
                     }
-                    return '<span class="text-muted">-</span>';
-                }
-            },
-            { 
-                data: 'winnings_per_person',
-                orderable: false,
-                render: function(data, type, row) {
-                    if (row.is_winner) {
-                        return '<span class="positive"><i class="bi bi-plus-circle-fill"></i> ' + data + '</span>';
+                ],
+                order: [[0, 'desc']],
+                language: {
+                    processing: "Traitement en cours...",
+                    search: "Rechercher&nbsp;:",
+                    lengthMenu: "Afficher _MENU_ éléments",
+                    info: "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                    infoEmpty: "Affichage de l'élément 0 à 0 sur 0 élément",
+                    infoFiltered: "(filtré de _MAX_ éléments au total)",
+                    infoPostFix: "",
+                    loadingRecords: "Chargement en cours...",
+                    zeroRecords: "Aucun élément à afficher",
+                    emptyTable: "Aucune donnée disponible dans le tableau",
+                    paginate: {
+                        first: "Premier",
+                        previous: "Précédent",
+                        next: "Suivant",
+                        last: "Dernier"
+                    },
+                    aria: {
+                        sortAscending: ": activer pour trier la colonne par ordre croissant",
+                        sortDescending: ": activer pour trier la colonne par ordre décroissant"
                     }
-                    return '<span class="text-muted">-</span>';
-                }
-            },
-            { 
-                data: 'status',
-                orderable: true,
-                className: 'text-center',
-                render: function(data, type, row) {
-                    if (row.is_winner) {
-                        return '<span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Gagné</span>';
+                },
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                footerCallback: function(row, data, start, end, display) {
+                    var api = this.api();
+                    
+                    // Get totals from server response
+                    var json = api.ajax.json();
+                    if (json && json.totals) {
+                        $(api.column(1).footer()).html('<strong class="negative"><i class="bi bi-dash-circle-fill"></i> ' + json.totals.amount + '</strong>');
+                        $(api.column(2).footer()).html('<strong class="negative"><i class="bi bi-dash-circle-fill"></i> ' + json.totals.cost_per_person + '</strong>');
+                        $(api.column(3).footer()).html('<strong class="positive"><i class="bi bi-plus-circle-fill"></i> ' + json.totals.winnings + '</strong>');
+                        $(api.column(4).footer()).html('<strong class="positive"><i class="bi bi-plus-circle-fill"></i> ' + json.totals.winnings_per_person + '</strong>');
                     }
-                    return '<span class="badge bg-secondary"><i class="bi bi-x-circle"></i> Pas gagné</span>';
                 }
-            },
-            { 
-                data: 'actions',
-                orderable: false,
-                searchable: false,
-                className: 'text-center',
-                render: function(data, type, row) {
-                    return data;
-                }
-            }
-        ],
-        order: [[0, 'desc']],
-        language: {
-            processing: "Traitement en cours...",
-            search: "Rechercher&nbsp;:",
-            lengthMenu: "Afficher _MENU_ éléments",
-            info: "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
-            infoEmpty: "Affichage de l'élément 0 à 0 sur 0 élément",
-            infoFiltered: "(filtré de _MAX_ éléments au total)",
-            infoPostFix: "",
-            loadingRecords: "Chargement en cours...",
-            zeroRecords: "Aucun élément à afficher",
-            emptyTable: "Aucune donnée disponible dans le tableau",
-            paginate: {
-                first: "Premier",
-                previous: "Précédent",
-                next: "Suivant",
-                last: "Dernier"
-            },
-            aria: {
-                sortAscending: ": activer pour trier la colonne par ordre croissant",
-                sortDescending: ": activer pour trier la colonne par ordre décroissant"
-            }
-        },
-        pageLength: 10,
-        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-        footerCallback: function(row, data, start, end, display) {
-            var api = this.api();
-            
-            // Get totals from server response
-            var json = api.ajax.json();
-            if (json && json.totals) {
-                $(api.column(1).footer()).html('<strong class="negative"><i class="bi bi-dash-circle-fill"></i> ' + json.totals.amount + '</strong>');
-                $(api.column(2).footer()).html('<strong class="negative"><i class="bi bi-dash-circle-fill"></i> ' + json.totals.cost_per_person + '</strong>');
-                $(api.column(3).footer()).html('<strong class="positive"><i class="bi bi-plus-circle-fill"></i> ' + json.totals.winnings + '</strong>');
-                $(api.column(4).footer()).html('<strong class="positive"><i class="bi bi-plus-circle-fill"></i> ' + json.totals.winnings_per_person + '</strong>');
-            }
+            });
+            gamesTableInitialized = true;
         }
+    }
+
+    // Fonction pour initialiser le tableau des transactions
+    function initTransactionsTable() {
+        if (!transactionsTableInitialized) {
+            $('#transactionsTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('groups.transactions-data', $group) }}",
+                    type: 'GET'
+                },
+                columns: [
+                    { 
+                        data: 'date',
+                        orderable: true
+                    },
+                    { 
+                        data: 'person',
+                        orderable: false
+                    },
+                    { 
+                        data: 'type',
+                        orderable: true
+                    },
+                    { 
+                        data: 'amount',
+                        orderable: true,
+                        className: 'text-end'
+                    },
+                    { 
+                        data: 'balance_before',
+                        orderable: true,
+                        className: 'text-end'
+                    },
+                    { 
+                        data: 'balance_after',
+                        orderable: true,
+                        className: 'text-end'
+                    },
+                    { 
+                        data: 'description',
+                        orderable: false
+                    }
+                ],
+                order: [[0, 'desc']],
+                language: {
+                    processing: "Traitement en cours...",
+                    search: "Rechercher&nbsp;:",
+                    lengthMenu: "Afficher _MENU_ éléments",
+                    info: "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                    infoEmpty: "Affichage de l'élément 0 à 0 sur 0 élément",
+                    infoFiltered: "(filtré de _MAX_ éléments au total)",
+                    infoPostFix: "",
+                    loadingRecords: "Chargement en cours...",
+                    zeroRecords: "Aucune transaction à afficher",
+                    emptyTable: "Aucune transaction enregistrée pour ce groupe",
+                    paginate: {
+                        first: "Premier",
+                        previous: "Précédent",
+                        next: "Suivant",
+                        last: "Dernier"
+                    },
+                    aria: {
+                        sortAscending: ": activer pour trier la colonne par ordre croissant",
+                        sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                    }
+                },
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]]
+            });
+            transactionsTableInitialized = true;
+        }
+    }
+
+    // Initialiser le tableau des jeux au chargement (collapse ouvert par défaut)
+    initGamesTable();
+
+    // Initialiser les tableaux quand le collapse est ouvert
+    $('#gamesCollapse').on('shown.bs.collapse', function () {
+        initGamesTable();
+    });
+
+    $('#transactionsCollapse').on('shown.bs.collapse', function () {
+        initTransactionsTable();
     });
 });
 </script>

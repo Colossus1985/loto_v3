@@ -54,14 +54,7 @@ class GroupController extends Controller
         $personIdsInGroup = $group->persons->pluck('id')->toArray();
         $availablePersons = Person::whereNotIn('id', $personIdsInGroup)->get();
         
-        // Récupérer les transactions liées au groupe
-        $transactions = \App\Models\PersonTransaction::where('group_id', $group->id)
-            ->with('person')
-            ->orderBy('created_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->get();
-        
-        return view('groups.show', compact('group', 'availablePersons', 'transactions'));
+        return view('groups.show', compact('group', 'availablePersons'));
     }
 
     /**
@@ -511,5 +504,104 @@ class GroupController extends Controller
 
         return redirect()->back()
             ->with('success', "Fonds retirés avec succès! {$person->display_name} : -{$validated['amount']}€");
+    }
+
+    /**
+     * Get transactions data for DataTable (server-side)
+     */
+    public function getTransactionsData(Group $group, Request $request)
+    {
+        $query = \App\Models\PersonTransaction::where('group_id', $group->id)
+            ->with('person');
+
+        // Handle search
+        if ($request->has('search') && !empty($request->search['value'])) {
+            $search = $request->search['value'];
+            $query->where(function($q) use ($search) {
+                $q->where('type', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('amount', 'like', "%{$search}%")
+                  ->orWhereHas('person', function($q) use ($search) {
+                      $q->where('firstname', 'like', "%{$search}%")
+                        ->orWhere('lastname', 'like', "%{$search}%")
+                        ->orWhere('pseudo', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Total records
+        $totalRecords = \App\Models\PersonTransaction::where('group_id', $group->id)->count();
+        $filteredRecords = $query->count();
+
+        // Handle ordering
+        if ($request->has('order')) {
+            $orderColumn = $request->order[0]['column'];
+            $orderDir = $request->order[0]['dir'];
+            
+            $columns = ['created_at', 'person_id', 'type', 'amount', 'balance_before', 'balance_after'];
+            if (isset($columns[$orderColumn])) {
+                $query->orderBy($columns[$orderColumn], $orderDir);
+            }
+        } else {
+            $query->orderBy('created_at', 'desc')->orderBy('id', 'desc');
+        }
+
+        // Handle pagination
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 10);
+        $transactions = $query->skip($start)->take($length)->get();
+
+        // Format data
+        $typeConfig = [
+            'add_floating' => ['icon' => 'plus-circle-fill', 'color' => 'success', 'label' => 'Ajout Flottant'],
+            'withdraw_floating' => ['icon' => 'dash-circle-fill', 'color' => 'danger', 'label' => 'Retrait Flottant'],
+            'join_group' => ['icon' => 'box-arrow-in-right', 'color' => 'primary', 'label' => 'Adhésion'],
+            'leave_group' => ['icon' => 'box-arrow-right', 'color' => 'warning', 'label' => 'Départ'],
+            'add_group_funds' => ['icon' => 'piggy-bank-fill', 'color' => 'info', 'label' => 'Ajout Fonds'],
+            'withdraw_group_funds' => ['icon' => 'cash-stack', 'color' => 'warning', 'label' => 'Retrait Fonds'],
+            'transfer_to_group' => ['icon' => 'arrow-left-right', 'color' => 'secondary', 'label' => 'Transfert'],
+            'game_played' => ['icon' => 'dice-5-fill', 'color' => 'danger', 'label' => 'Jeu Joué'],
+            'game_won' => ['icon' => 'trophy-fill', 'color' => 'success', 'label' => 'Gain'],
+            'correction' => ['icon' => 'exclamation-triangle-fill', 'color' => 'warning', 'label' => 'Correction'],
+        ];
+
+        $data = $transactions->map(function($transaction) use ($typeConfig) {
+            $config = $typeConfig[$transaction->type] ?? ['icon' => 'question-circle', 'color' => 'secondary', 'label' => $transaction->type];
+            
+            $personLink = '<a href="' . route('persons.show', $transaction->person) . '" class="text-decoration-none">
+                <i class="bi bi-person-fill"></i> ' . e($transaction->person->display_name) . '
+            </a>';
+            
+            $typeBadge = '<span class="badge bg-' . $config['color'] . '">
+                <i class="bi bi-' . $config['icon'] . '"></i> ' . $config['label'] . '
+            </span>';
+            
+            $amountClass = $transaction->amount >= 0 ? 'text-success' : 'text-danger';
+            $amountIcon = $transaction->amount >= 0 ? 'plus' : 'dash';
+            $amountHtml = '<strong class="' . $amountClass . '">
+                <i class="bi bi-' . $amountIcon . '-circle-fill"></i>
+                ' . number_format(abs($transaction->amount), 2) . '€
+            </strong>';
+            
+            $balanceAfterClass = $transaction->balance_after >= $transaction->balance_before ? 'text-success' : 'text-danger';
+            $balanceAfterHtml = '<strong class="' . $balanceAfterClass . '">' . number_format($transaction->balance_after, 2) . '€</strong>';
+            
+            return [
+                'date' => '<small class="text-muted">' . $transaction->created_at->format('d/m/Y H:i') . '</small>',
+                'person' => $personLink,
+                'type' => $typeBadge,
+                'amount' => $amountHtml,
+                'balance_before' => '<span class="text-muted">' . number_format($transaction->balance_before, 2) . '€</span>',
+                'balance_after' => $balanceAfterHtml,
+                'description' => '<small class="text-muted">' . e($transaction->description ?? '-') . '</small>'
+            ];
+        });
+
+        return response()->json([
+            'draw' => intval($request->input('draw')),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data' => $data
+        ]);
     }
 }

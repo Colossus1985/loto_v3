@@ -579,3 +579,34 @@ details[open] summary i.bi-chevron-down {
 details summary i.bi-chevron-down {
     transition: transform 0.3s ease;
 }
+
+/* Collapse button styling */
+h2 button[data-bs-toggle="collapse"] {
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+h2 button[data-bs-toggle="collapse"]:hover {
+    color: #0d6efd;
+    text-decoration: none !important;
+}
+
+h2 button[data-bs-toggle="collapse"]:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+h2 button[data-bs-toggle="collapse"] i.bi-chevron-down {
+    transition: transform 0.3s ease;
+    font-size: 1.2rem;
+}
+
+h2 button[data-bs-toggle="collapse"][aria-expanded="true"] i.bi-chevron-down {
+    transform: rotate(180deg);
+}
+
+h2 button[data-bs-toggle="collapse"] span {
+    font-size: 1.5rem;
+}
