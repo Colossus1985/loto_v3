@@ -107,7 +107,7 @@ class GroupController extends Controller
             if (!$game->is_winner) {
                 $actions .= '<a href="' . route('games.win', $game) . '" class="btn btn-sm btn-success me-1"><i class="bi bi-trophy-fill"></i> Gain</a>';
             }
-            $actions .= '<form action="' . route('games.destroy', $game) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Êtes-vous sûr de vouloir supprimer ce jeu ? Les coûts seront remboursés en fonds flottants et les gains retirés.\')">
+            $actions .= '<form action="' . route('games.destroy', $game) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Êtes-vous sûr de vouloir supprimer ce jeu ? Les gains seront retirés.\')">
                 <input type="hidden" name="_token" value="' . csrf_token() . '">
                 <input type="hidden" name="_method" value="DELETE">
                 <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash-fill"></i> Supprimer</button>

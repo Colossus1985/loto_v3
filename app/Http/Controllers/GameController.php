@@ -186,30 +186,7 @@ class GameController extends Controller
 
             // Traiter chaque personne
             foreach ($persons as $person) {
-                // 1. Rembourser le coût du jeu en fonds flottants
-                $floatingBalanceBefore = $person->floating_balance;
-                $floatingBalanceAfter = $floatingBalanceBefore + $costPerPerson;
-                
-                $person->update([
-                    'floating_balance' => $floatingBalanceAfter
-                ]);
-
-                // Enregistrer la transaction de correction pour le remboursement
-                $person->logTransaction(
-                    'correction',
-                    $costPerPerson,
-                    $floatingBalanceBefore,
-                    $floatingBalanceAfter,
-                    'floating',
-                    "Correction: Remboursement du jeu supprimé (Groupe: {$group->name}, Date: {$game->game_date}, Mise: {$game->amount}€)",
-                    null
-                );
-
-                // 2. Si le jeu avait des gains, les retirer des fonds flottants
-                // NOTE: On ne retire PAS les gains des fonds flottants car ils n'y ont jamais été ajoutés
-                // Les gains ont été crédités directement au balance du groupe
-
-                // 3. Ajuster le balance du groupe en retirant le coût
+                // 1. Ajuster le balance du groupe en retirant le coût
                 $balanceBeforeGroupAdjustment = $person->pivot->balance;
                 $balanceAfterGroupAdjustment = $balanceBeforeGroupAdjustment + $costPerPerson;
                 
