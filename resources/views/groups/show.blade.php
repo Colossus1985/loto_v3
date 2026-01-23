@@ -19,52 +19,65 @@
     @endif
 </div>
 
-<div class="row g-4 mb-4">
-    <div class="col-md-6 col-lg-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-dash-circle-fill text-danger"></i> Total Dépensé</h6>
-                <h3 class="card-title negative">{{ number_format($group->total_spent, 2) }}€</h3>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-plus-circle-fill text-success"></i> Total Gagné</h6>
-                <h3 class="card-title positive">{{ number_format($group->total_won, 2) }}€</h3>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <div class="card border-0 shadow-sm h-100 bg-{{ ($group->total_won - $group->total_spent) >= 0 ? 'success' : 'danger' }} bg-opacity-10">
-            <div class="card-body">
-                <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-graph-{{ ($group->total_won - $group->total_spent) >= 0 ? 'up' : 'down' }}-arrow"></i> Différence</h6>
-                <h3 class="card-title {{ ($group->total_won - $group->total_spent) < 0 ? 'negative' : 'positive' }}">{{ number_format($group->total_won - $group->total_spent, 2) }}€</h3>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-wallet2"></i> Budget Total</h6>
-                <h3 class="card-title {{ $group->total_budget < 0 ? 'negative' : 'positive' }}">{{ number_format($group->total_budget, 2) }}€</h3>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-people"></i> Nombre de Personnes</h6>
-                <h3 class="card-title text-primary">{{ $group->persons->count() }}</h3>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-calendar-event"></i> Créé le</h6>
-                <h3 class="card-title text-info fs-5">{{ $group->created_at->format('d/m/Y H:i') }}</h3>
+<h2 class="mt-4 mb-3">
+    <button class="btn btn-link text-decoration-none p-0 text-start w-100 d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#statisticsCollapse" aria-expanded="false" aria-controls="statisticsCollapse">
+        <i class="bi bi-bar-chart text-primary me-2"></i>
+        <span>Statistiques du Groupe</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+    </button>
+</h2>
+<div class="collapse shadow" id="statisticsCollapse">
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-dash-circle-fill text-danger"></i> Total Dépensé</h6>
+                            <h3 class="card-title negative">{{ number_format($group->total_spent, 2) }}€</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-plus-circle-fill text-success"></i> Total Gagné</h6>
+                            <h3 class="card-title positive">{{ number_format($group->total_won, 2) }}€</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100 bg-{{ ($group->total_won - $group->total_spent) >= 0 ? 'success' : 'danger' }} bg-opacity-10">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-graph-{{ ($group->total_won - $group->total_spent) >= 0 ? 'up' : 'down' }}-arrow"></i> Différence</h6>
+                            <h3 class="card-title {{ ($group->total_won - $group->total_spent) < 0 ? 'negative' : 'positive' }}">{{ number_format($group->total_won - $group->total_spent, 2) }}€</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-wallet2"></i> Budget Total</h6>
+                            <h3 class="card-title {{ $group->total_budget < 0 ? 'negative' : 'positive' }}">{{ number_format($group->total_budget, 2) }}€</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-people"></i> Nombre de Personnes</h6>
+                            <h3 class="card-title text-primary">{{ $group->persons->count() }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-calendar-event"></i> Créé le</h6>
+                            <h3 class="card-title text-info fs-5">{{ $group->created_at->format('d/m/Y H:i') }}</h3>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
